@@ -170,6 +170,22 @@ CUSTOM_API_KEY=
 CUSTOM_MODEL_NAME=your-loaded-model
 ```
 
+#### GitHub Copilot proxy sync
+
+If you expose GitHub Copilot through an OpenAI-compatible proxy (for example [`copilot-api`](https://github.com/RazonIn4K/copilot-api)),
+you can bootstrap Zen's registry automatically:
+
+```bash
+cp copilot.env.example .env  # optional convenience env
+python3 scripts/sync_copilot_models.py          # writes conf/custom_models.json
+# or preview without writing:
+python3 scripts/sync_copilot_models.py --dry-run
+```
+
+The script queries `CUSTOM_API_URL` (defaulting to `http://localhost:4141/v1`), generates `copilot/<alias>` entries,
+and merges them with any existing local models in `conf/custom_models.json`. Re-run the script whenever your Copilot
+account gains new models so Zen stays in sync.
+
 ## Using Models
 
 **Using model aliases (from the registry files):**

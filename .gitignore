@@ -143,6 +143,9 @@ cython_debug/
 
 # VS Code
 .vscode/
+!.vscode/
+.vscode/*
+!.vscode/tasks.json
 
 # macOS
 .DS_Store

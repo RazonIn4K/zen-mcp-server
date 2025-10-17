@@ -259,6 +259,10 @@ cd zen-mcp-server
 ./run-server.sh --help
 ```
 
+**VS Code workflow tip:** The repository ships with `.vscode/tasks.json` so you can launch the GitHub Copilot proxy
+(`copilot-api:start`) and Zen (`zen:start`) together via the `dev:zen+copilot` task. The task injects the same
+environment variables shown in `copilot.env.example`.
+
 **What the setup script does:**
 - ✅ Creates Python virtual environment
 - ✅ Installs all dependencies  

@@ -98,5 +98,15 @@ gh pr merge <pr-number>
 
 Install GitHub CLI: `brew install gh` (macOS) or visit https://cli.github.com for other platforms.
 
+## CS-Brain 3-Layer Interaction Protocol
+All MCP tooling now operates within the CS-Brain 3-layer architecture:
+- **L1 Foundations:** algorithms, mathematical guarantees, cryptography.
+- **L2 Core Technologies:** operating systems, infrastructure, hardware interfaces.
+- **L3 Applications:** user-facing flows, business logic, integrations.
+
+Prompts enforce layer identification, cross-layer impact analysis, and security checks at every boundary. When requesting
+help from Zen tools, state the suspected layer(s) and provide representative files for both the symptom layer and any
+potential root-cause layer to keep reasoning aligned with the Universal Abstraction Framework.
+
 ## Security & Configuration Tips
 Store API keys and provider URLs in `.env` or your MCP client config; never commit secrets or generated log artifacts. Use `run-server.sh` to regenerate environments and verify connectivity after dependency changes. When adding providers or tools, sanitize prompts and responses, document required environment variables in `docs/`, and update `claude_config_example.json` if new capabilities ship by default.

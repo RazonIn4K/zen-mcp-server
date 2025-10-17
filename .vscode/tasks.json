@@ -1,0 +1,60 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "copilot-api:start",
+      "type": "shell",
+      "command": "npx",
+      "args": [
+        "copilot-api@latest",
+        "start",
+        "--port",
+        "4141",
+        "--verbose",
+        "--rate-limit",
+        "2",
+        "--wait"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/../copilot-api"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "zen:start",
+      "type": "shell",
+      "command": "./run-server.sh",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "env": {
+        "CUSTOM_API_URL": "http://localhost:4141/v1",
+        "CUSTOM_API_KEY": "copilot-proxy",
+        "DEFAULT_MODEL": "auto",
+        "LOG_LEVEL": "INFO"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "group": "zen"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "dev:zen+copilot",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "copilot-api:start",
+        "zen:start"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}
