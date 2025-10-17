@@ -191,3 +191,10 @@ logs/
 /worktrees/
 test_simulation_files/
 .mcp.json
+# Node / Bun tooling artifacts
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
+

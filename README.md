@@ -161,6 +161,10 @@ cd zen-mcp-server
 # Auto-configures Claude Desktop, Claude Code, Gemini CLI, Codex CLI, Qwen CLI
 # Enable / disable additional settings in .env
 ./run-server.sh  
+# or, spin up proxy + sync + server in one go
+./scripts/dev_start.sh
+# or use Node/Bun helpers
+npm run start
 ```
 
 **Option B: Instant Setup with [uvx](https://docs.astral.sh/uv/getting-started/installation/)**
