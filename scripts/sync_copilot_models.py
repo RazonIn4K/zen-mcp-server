@@ -156,21 +156,42 @@ def infer_capabilities(model_id: str) -> dict[str, Any]:
     }
 
 
-def build_aliases(prefix: str, model: CopilotModel) -> list[str]:
+def build_aliases(prefix: str, model: CopilotModel, used_aliases: set[str]) -> list[str]:
     raw = f"{prefix}/{model.model_id}"
     slug_alias = f"{prefix}/{slugify(model.model_id)}"
-    candidates = {raw.lower(): raw, slug_alias.lower(): slug_alias}
+
+    candidates = [raw, slug_alias]
 
     display_slug = slugify(model.display_name)
     display_alias = f"{prefix}/{display_slug}"
-    candidates.setdefault(display_alias.lower(), display_alias)
+    if display_alias not in candidates:
+        candidates.append(display_alias)
 
-    return list(candidates.values())
+    aliases: list[str] = []
+
+    for alias in candidates:
+        lowered = alias.lower()
+        if lowered in used_aliases:
+            continue
+        aliases.append(alias)
+        used_aliases.add(lowered)
+
+    if not aliases:
+        base = f"{prefix}/{slugify(model.model_id)}"
+        candidate = base or f"{prefix}/model"
+        counter = 2
+        while candidate.lower() in used_aliases:
+            candidate = f"{base}-{counter}"
+            counter += 1
+        aliases.append(candidate)
+        used_aliases.add(candidate.lower())
+
+    return aliases
 
 
-def build_entry(prefix: str, model: CopilotModel) -> dict[str, Any]:
+def build_entry(prefix: str, model: CopilotModel, used_aliases: set[str]) -> dict[str, Any]:
     capabilities = infer_capabilities(model.model_id)
-    aliases = build_aliases(prefix, model)
+    aliases = build_aliases(prefix, model, used_aliases)
 
     description = (
         f"{model.display_name} via GitHub Copilot proxy "
@@ -309,7 +330,8 @@ def main(argv: list[str] | None = None) -> int:
     readme_block = registry.get("_README") or DEFAULT_README
     retained = retain_non_copilot_entries(registry.get("models", []), args.alias_prefix)
 
-    generated = [build_entry(args.alias_prefix, model) for model in models]
+    used_aliases: set[str] = set()
+    generated = [build_entry(args.alias_prefix, model, used_aliases) for model in models]
     generated.sort(
         key=lambda entry: (
             -entry.get("intelligence_score", 0),
