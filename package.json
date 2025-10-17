@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "bash scripts/dev_start.sh"
+    "start": "bash scripts/dev_start.sh",
+    "stdio": "bash scripts/start_stdio_stack.sh"
   }
 }

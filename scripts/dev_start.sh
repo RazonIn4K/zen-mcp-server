@@ -3,6 +3,11 @@
 # Convenience launcher that starts the Copilot proxy, syncs the model registry,
 # and then boots the Zen MCP server in a single command. Press Ctrl+C to stop
 # everything.
+#
+# NOTE: This script is verbose and prints setup progress to the terminal.
+#       MCP clients that require a pristine stdio channel (Claude Desktop,
+#       Claude Code CLI, Gemini CLI, Zed, etc.) should call
+#       scripts/start_stdio_stack.sh instead.
 
 set -euo pipefail
 

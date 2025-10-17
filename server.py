@@ -100,7 +100,9 @@ root_logger.handlers.clear()
 stderr_handler = logging.StreamHandler(sys.stderr)
 stderr_handler.setLevel(getattr(logging, log_level, logging.INFO))
 stderr_handler.setFormatter(LocalTimeFormatter(log_format))
-root_logger.addHandler(stderr_handler)
+mute_stderr_logging = (get_env("ZEN_STDIO_SILENT", "0") or "0").lower() in {"1", "true", "yes"}
+if not mute_stderr_logging:
+    root_logger.addHandler(stderr_handler)
 
 # Note: MCP stdio_server interferes with stderr during tool execution
 # All logs are properly written to logs/mcp_server.log for monitoring

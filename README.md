@@ -160,11 +160,15 @@ cd zen-mcp-server
 # Handles everything: setup, config, API keys from system environment. 
 # Auto-configures Claude Desktop, Claude Code, Gemini CLI, Codex CLI, Qwen CLI
 # Enable / disable additional settings in .env
-./run-server.sh  
-# or, spin up proxy + sync + server in one go
+./run-server.sh
+
+# Launch full Copilot proxy + Zen stack (verbose, good for local tinkering)
 ./scripts/dev_start.sh
-# or use Node/Bun helpers
-npm run start
+
+# Launch stdio-safe stack for MCP clients (Claude Desktop, Gemini CLI, Zed, etc.)
+./scripts/start_stdio_stack.sh
+# or npm run stdio / bun run stdio
+npm run stdio
 ```
 
 **Option B: Instant Setup with [uvx](https://docs.astral.sh/uv/getting-started/installation/)**
@@ -197,6 +201,7 @@ npm run start
 
 👉 **[Complete Setup Guide](docs/getting-started.md)** with detailed installation, configuration for Gemini / Codex / Qwen, and troubleshooting
 👉 **[Cursor & VS Code Setup](docs/getting-started.md#ide-clients)** for IDE integration instructions
+👉 **[MCP Config Examples](docs/mcp-config-examples.md)** for Claude Desktop, Claude Code, Gemini CLI, and Zed snippets
 📺 **[Watch tools in action](#-watch-tools-in-action)** to see real-world examples
 
 ## Provider Configuration

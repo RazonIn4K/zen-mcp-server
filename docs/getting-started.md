@@ -269,8 +269,12 @@ environment variables shown in `copilot.env.example`.
 # Bash/Zsh
 ./scripts/dev_start.sh
 
+# Stdio-safe launcher for MCP clients (Claude Desktop, Gemini CLI, Zed, etc.)
+./scripts/start_stdio_stack.sh
+
 # Node/Bun toolchain
 npm run start        # yarn start / pnpm start / bun run start map to the same script
+npm run stdio        # yarn stdio / pnpm stdio / bun run stdio
 
 # Optional container smoke test (pass Copilot auth via env/volume)
 docker build -f docker/dev.Dockerfile -t zen-mcp-dev .
