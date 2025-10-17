@@ -263,13 +263,26 @@ cd zen-mcp-server
 (`copilot-api:start`) and Zen (`zen:start`) together via the `dev:zen+copilot` task. The task injects the same
 environment variables shown in `copilot.env.example`.
 
-**Need everything in one go?** Use the development helper script to start the Copilot proxy, sync models, and boot Zen:
+**Need everything in one go?** Choose whichever entrypoint fits your workflow:
 
 ```bash
+# Bash/Zsh
 ./scripts/dev_start.sh
+
+# Node/Bun toolchain
+npm run start        # yarn start / pnpm start / bun run start map to the same script
+
+# Optional container smoke test (pass Copilot auth via env/volume)
+docker build -f docker/dev.Dockerfile -t zen-mcp-dev .
+docker run --rm -it \
+  -e GH_TOKEN=ghp_your_token_here \
+  -p 4141:4141 \
+  zen-mcp-dev
 ```
 
-The script honours `COPILOT_PORT` and `COPILOT_RATE_LIMIT` environment variables if you need to override the defaults.
+All options honour `COPILOT_PORT` and `COPILOT_RATE_LIMIT` if you export them first. Containers are useful for quick
+checks, but MCP-aware IDEs still need to spawn the process locally to stream STDIO, so stick with the host script for
+daily Claude/Cursor integrations.
 
 **What the setup script does:**
 - ✅ Creates Python virtual environment

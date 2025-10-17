@@ -1,0 +1,8 @@
+{
+  "name": "zen-mcp-runner",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "bash scripts/dev_start.sh"
+  }
+}
