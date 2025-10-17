@@ -263,6 +263,14 @@ cd zen-mcp-server
 (`copilot-api:start`) and Zen (`zen:start`) together via the `dev:zen+copilot` task. The task injects the same
 environment variables shown in `copilot.env.example`.
 
+**Need everything in one go?** Use the development helper script to start the Copilot proxy, sync models, and boot Zen:
+
+```bash
+./scripts/dev_start.sh
+```
+
+The script honours `COPILOT_PORT` and `COPILOT_RATE_LIMIT` environment variables if you need to override the defaults.
+
 **What the setup script does:**
 - ✅ Creates Python virtual environment
 - ✅ Installs all dependencies  
