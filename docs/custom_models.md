@@ -186,6 +186,9 @@ The script queries `CUSTOM_API_URL` (defaulting to `http://localhost:4141/v1`), 
 and merges them with any existing local models in `conf/custom_models.json`. Re-run the script whenever your Copilot
 account gains new models so Zen stays in sync.
 
+Need only the newest Copilot models? Set `CUSTOM_ALLOWED_MODELS` (see `copilot.env.example`) to the aliases you want
+exposed—e.g. `copilot/claude-sonnet-4.5`, `copilot/gpt-5`, `copilot/gpt-5-codex`, `copilot/grok-code-fast-1`.
+
 ## Using Models
 
 **Using model aliases (from the registry files):**
