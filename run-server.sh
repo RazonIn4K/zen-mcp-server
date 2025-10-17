@@ -1235,6 +1235,10 @@ parse_env_variables() {
 
 # Check if MCP is added to Claude CLI and verify it's correct
 check_claude_cli_integration() {
+    if [[ "${ZEN_SKIP_INTEGRATIONS:-0}" == "1" ]] ; then
+        print_info "Skipping Claude CLI integration (ZEN_SKIP_INTEGRATIONS=1)"
+        return 0
+    fi
     local python_cmd="$1"
     local server_path="$2"
 
@@ -1377,6 +1381,10 @@ check_claude_cli_integration() {
 
 # Check and update Claude Desktop configuration
 check_claude_desktop_integration() {
+    if [[ "${ZEN_SKIP_INTEGRATIONS:-0}" == "1" ]] ; then
+        print_info "Skipping Claude Desktop integration (ZEN_SKIP_INTEGRATIONS=1)"
+        return 0
+    fi
     local python_cmd="$1"
     local server_path="$2"
 
@@ -1590,6 +1598,10 @@ EOF
 
 # Check and update Gemini CLI configuration
 check_gemini_cli_integration() {
+    if [[ "${ZEN_SKIP_INTEGRATIONS:-0}" == "1" ]] ; then
+        print_info "Skipping Gemini CLI integration (ZEN_SKIP_INTEGRATIONS=1)"
+        return 0
+    fi
     local script_dir="$1"
     local zen_wrapper="$script_dir/zen-mcp-server"
 
@@ -1684,6 +1696,10 @@ EOF
 
 # Check and update Codex CLI configuration
 check_codex_cli_integration() {
+    if [[ "${ZEN_SKIP_INTEGRATIONS:-0}" == "1" ]] ; then
+        print_info "Skipping Codex CLI integration (ZEN_SKIP_INTEGRATIONS=1)"
+        return 0
+    fi
     # Check if Codex is installed
     if ! command -v codex &> /dev/null; then
         # Codex CLI not installed
@@ -1901,6 +1917,10 @@ EOF
 
 # Check and update Qwen Code CLI configuration
 check_qwen_cli_integration() {
+    if [[ "${ZEN_SKIP_INTEGRATIONS:-0}" == "1" ]] ; then
+        print_info "Skipping Qwen CLI integration (ZEN_SKIP_INTEGRATIONS=1)"
+        return 0
+    fi
     local python_cmd="$1"
     local server_path="$2"
 
