@@ -83,7 +83,7 @@ start_copilot_proxy() {
         log "Installing copilot-api dependencies with bun..."
         bun install --silent >>"${PROXY_LOG}" 2>&1
       fi
-      bun run start -- "${COPILOT_ARGS[@]}" >>"${PROXY_LOG}" 2>&1
+      bun run start -- start "${COPILOT_ARGS[@]}" >>"${PROXY_LOG}" 2>&1
     ) &
   else
     log "Starting Copilot proxy via npm package on port ${COPILOT_PORT}"
@@ -135,4 +135,3 @@ fi
 
 log "Handing off to server.py (stdio mode)"
 "${PYTHON_BIN}" "${ROOT_DIR}/server.py" "$@"
-

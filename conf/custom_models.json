@@ -44,7 +44,7 @@
         "copilot/gpt-4.1",
         "copilot/gpt-4-1"
       ],
-      "description": "GPT-4.1 via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-17).",
+      "description": "GPT-4.1 via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 8192,
       "supports_extended_thinking": true,
@@ -62,7 +62,7 @@
         "copilot/gpt-4.1-2025-04-14",
         "copilot/gpt-4-1-2025-04-14"
       ],
-      "description": "GPT-4.1 via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-17).",
+      "description": "GPT-4.1 via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 8192,
       "supports_extended_thinking": true,
@@ -79,7 +79,7 @@
       "aliases": [
         "copilot/gpt-4o"
       ],
-      "description": "GPT-4o via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-17).",
+      "description": "GPT-4o via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 8192,
       "supports_extended_thinking": true,
@@ -96,7 +96,7 @@
       "aliases": [
         "copilot/gpt-4o-2024-11-20"
       ],
-      "description": "GPT-4o via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-17).",
+      "description": "GPT-4o via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 8192,
       "supports_extended_thinking": true,
@@ -113,7 +113,7 @@
       "aliases": [
         "copilot/gpt-4o-2024-05-13"
       ],
-      "description": "GPT-4o via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-17).",
+      "description": "GPT-4o via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 8192,
       "supports_extended_thinking": true,
@@ -130,7 +130,7 @@
       "aliases": [
         "copilot/gpt-4o-2024-08-06"
       ],
-      "description": "GPT-4o via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-17).",
+      "description": "GPT-4o via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 8192,
       "supports_extended_thinking": true,
@@ -149,7 +149,7 @@
         "copilot/claude-3-5-sonnet",
         "copilot/claude-sonnet-3-5"
       ],
-      "description": "Claude Sonnet 3.5 via GitHub Copilot proxy (vendor: Anthropic, synced 2025-10-17).",
+      "description": "Claude Sonnet 3.5 via GitHub Copilot proxy (vendor: Anthropic, synced 2025-10-18).",
       "context_window": 200000,
       "max_output_tokens": 8192,
       "supports_extended_thinking": true,
@@ -168,7 +168,7 @@
         "copilot/claude-3-7-sonnet",
         "copilot/claude-sonnet-3-7"
       ],
-      "description": "Claude Sonnet 3.7 via GitHub Copilot proxy (vendor: Anthropic, synced 2025-10-17).",
+      "description": "Claude Sonnet 3.7 via GitHub Copilot proxy (vendor: Anthropic, synced 2025-10-18).",
       "context_window": 200000,
       "max_output_tokens": 8192,
       "supports_extended_thinking": true,
@@ -187,7 +187,7 @@
         "copilot/claude-3-7-sonnet-thought",
         "copilot/claude-sonnet-3-7-thinking"
       ],
-      "description": "Claude Sonnet 3.7 Thinking via GitHub Copilot proxy (vendor: Anthropic, synced 2025-10-17).",
+      "description": "Claude Sonnet 3.7 Thinking via GitHub Copilot proxy (vendor: Anthropic, synced 2025-10-18).",
       "context_window": 200000,
       "max_output_tokens": 8192,
       "supports_extended_thinking": true,
@@ -204,7 +204,7 @@
       "aliases": [
         "copilot/claude-sonnet-4"
       ],
-      "description": "Claude Sonnet 4 via GitHub Copilot proxy (vendor: Anthropic, synced 2025-10-17).",
+      "description": "Claude Sonnet 4 via GitHub Copilot proxy (vendor: Anthropic, synced 2025-10-18).",
       "context_window": 200000,
       "max_output_tokens": 8192,
       "supports_extended_thinking": true,
@@ -222,7 +222,7 @@
         "copilot/claude-sonnet-4.5",
         "copilot/claude-sonnet-4-5"
       ],
-      "description": "Claude Sonnet 4.5 via GitHub Copilot proxy (vendor: Anthropic, synced 2025-10-17).",
+      "description": "Claude Sonnet 4.5 via GitHub Copilot proxy (vendor: Anthropic, synced 2025-10-18).",
       "context_window": 200000,
       "max_output_tokens": 8192,
       "supports_extended_thinking": true,
@@ -240,7 +240,7 @@
         "copilot/gemini-2.5-pro",
         "copilot/gemini-2-5-pro"
       ],
-      "description": "Gemini 2.5 Pro via GitHub Copilot proxy (vendor: Google, synced 2025-10-17).",
+      "description": "Gemini 2.5 Pro via GitHub Copilot proxy (vendor: Google, synced 2025-10-18).",
       "context_window": 1048576,
       "max_output_tokens": 8192,
       "supports_extended_thinking": true,
@@ -257,7 +257,7 @@
       "aliases": [
         "copilot/gpt-4o-mini"
       ],
-      "description": "GPT-4o mini via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-17).",
+      "description": "GPT-4o mini via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 4096,
       "supports_extended_thinking": false,
@@ -274,7 +274,7 @@
       "aliases": [
         "copilot/gpt-4o-mini-2024-07-18"
       ],
-      "description": "GPT-4o mini via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-17).",
+      "description": "GPT-4o mini via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 4096,
       "supports_extended_thinking": false,
@@ -293,7 +293,7 @@
         "copilot/gemini-2-0-flash-001",
         "copilot/gemini-2-0-flash"
       ],
-      "description": "Gemini 2.0 Flash via GitHub Copilot proxy (vendor: Google, synced 2025-10-17).",
+      "description": "Gemini 2.0 Flash via GitHub Copilot proxy (vendor: Google, synced 2025-10-18).",
       "context_window": 1048576,
       "max_output_tokens": 8192,
       "supports_extended_thinking": false,
@@ -311,7 +311,7 @@
         "copilot/o4-mini",
         "copilot/o4-mini-preview"
       ],
-      "description": "o4-mini (Preview) via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-17).",
+      "description": "o4-mini (Preview) via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 6144,
       "supports_extended_thinking": false,
@@ -328,7 +328,7 @@
       "aliases": [
         "copilot/o4-mini-2025-04-16"
       ],
-      "description": "o4-mini (Preview) via GitHub Copilot proxy (vendor: OpenAI, synced 2025-10-17).",
+      "description": "o4-mini (Preview) via GitHub Copilot proxy (vendor: OpenAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 6144,
       "supports_extended_thinking": false,
@@ -346,7 +346,7 @@
         "copilot/claude-haiku-4.5",
         "copilot/claude-haiku-4-5"
       ],
-      "description": "Claude Haiku 4.5 via GitHub Copilot proxy (vendor: Anthropic, synced 2025-10-17).",
+      "description": "Claude Haiku 4.5 via GitHub Copilot proxy (vendor: Anthropic, synced 2025-10-18).",
       "context_window": 200000,
       "max_output_tokens": 6000,
       "supports_extended_thinking": false,
@@ -364,7 +364,7 @@
         "copilot/text-embedding-ada-002",
         "copilot/embedding-v2-ada"
       ],
-      "description": "Embedding V2 Ada via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-17).",
+      "description": "Embedding V2 Ada via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 4096,
       "supports_extended_thinking": false,
@@ -382,7 +382,7 @@
         "copilot/text-embedding-3-small",
         "copilot/embedding-v3-small"
       ],
-      "description": "Embedding V3 small via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-17).",
+      "description": "Embedding V3 small via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 4096,
       "supports_extended_thinking": false,
@@ -400,7 +400,7 @@
         "copilot/text-embedding-3-small-inference",
         "copilot/embedding-v3-small-inference"
       ],
-      "description": "Embedding V3 small (Inference) via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-17).",
+      "description": "Embedding V3 small (Inference) via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 4096,
       "supports_extended_thinking": false,
@@ -417,7 +417,7 @@
       "aliases": [
         "copilot/gpt-4"
       ],
-      "description": "GPT 4 via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-17).",
+      "description": "GPT 4 via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 4096,
       "supports_extended_thinking": false,
@@ -434,7 +434,7 @@
       "aliases": [
         "copilot/gpt-4-0613"
       ],
-      "description": "GPT 4 via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-17).",
+      "description": "GPT 4 via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 4096,
       "supports_extended_thinking": false,
@@ -452,7 +452,7 @@
         "copilot/gpt-4-0125-preview",
         "copilot/gpt-4-turbo"
       ],
-      "description": "GPT 4 Turbo via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-17).",
+      "description": "GPT 4 Turbo via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 4096,
       "supports_extended_thinking": false,
@@ -470,7 +470,7 @@
         "copilot/gpt-41-copilot",
         "copilot/gpt-4-1-copilot"
       ],
-      "description": "GPT-4.1 Copilot via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-17).",
+      "description": "GPT-4.1 Copilot via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 4096,
       "supports_extended_thinking": false,
@@ -487,7 +487,7 @@
       "aliases": [
         "copilot/gpt-4-o-preview"
       ],
-      "description": "GPT-4o via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-17).",
+      "description": "GPT-4o via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 4096,
       "supports_extended_thinking": false,
@@ -504,7 +504,7 @@
       "aliases": [
         "copilot/gpt-5"
       ],
-      "description": "GPT-5 via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-17).",
+      "description": "GPT-5 via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 4096,
       "supports_extended_thinking": false,
@@ -521,7 +521,7 @@
       "aliases": [
         "copilot/gpt-5-mini"
       ],
-      "description": "GPT-5 mini via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-17).",
+      "description": "GPT-5 mini via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 4096,
       "supports_extended_thinking": false,
@@ -539,7 +539,7 @@
         "copilot/gpt-5-codex",
         "copilot/gpt-5-codex-preview"
       ],
-      "description": "GPT-5-Codex (Preview) via GitHub Copilot proxy (vendor: OpenAI, synced 2025-10-17).",
+      "description": "GPT-5-Codex (Preview) via GitHub Copilot proxy (vendor: OpenAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 4096,
       "supports_extended_thinking": false,
@@ -556,7 +556,7 @@
       "aliases": [
         "copilot/grok-code-fast-1"
       ],
-      "description": "Grok Code Fast 1 via GitHub Copilot proxy (vendor: xAI, synced 2025-10-17).",
+      "description": "Grok Code Fast 1 via GitHub Copilot proxy (vendor: xAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 4096,
       "supports_extended_thinking": false,
@@ -573,7 +573,7 @@
       "aliases": [
         "copilot/o3-mini"
       ],
-      "description": "o3-mini via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-17).",
+      "description": "o3-mini via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 4096,
       "supports_extended_thinking": false,
@@ -590,7 +590,7 @@
       "aliases": [
         "copilot/o3-mini-2025-01-31"
       ],
-      "description": "o3-mini via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-17).",
+      "description": "o3-mini via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 4096,
       "supports_extended_thinking": false,
@@ -607,7 +607,7 @@
       "aliases": [
         "copilot/o3-mini-paygo"
       ],
-      "description": "o3-mini via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-17).",
+      "description": "o3-mini via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-18).",
       "context_window": 128000,
       "max_output_tokens": 4096,
       "supports_extended_thinking": false,
@@ -625,7 +625,7 @@
         "copilot/gpt-3.5-turbo",
         "copilot/gpt-3-5-turbo"
       ],
-      "description": "GPT 3.5 Turbo via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-17).",
+      "description": "GPT 3.5 Turbo via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-18).",
       "context_window": 16384,
       "max_output_tokens": 2048,
       "supports_extended_thinking": false,
@@ -643,7 +643,7 @@
         "copilot/gpt-3.5-turbo-0613",
         "copilot/gpt-3-5-turbo-0613"
       ],
-      "description": "GPT 3.5 Turbo via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-17).",
+      "description": "GPT 3.5 Turbo via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2025-10-18).",
       "context_window": 16384,
       "max_output_tokens": 2048,
       "supports_extended_thinking": false,

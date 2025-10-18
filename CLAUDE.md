@@ -1,320 +1,351 @@
-# Claude Development Guide for Zen MCP Server
+# CLAUDE.md
 
-This file contains essential commands and workflows for developing and maintaining the Zen MCP Server when working with Claude. Use these instructions to efficiently run quality checks, manage the server, check logs, and run tests.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Quick Reference Commands
+## Project Overview
 
-### Code Quality Checks
+Zen MCP Server is a Model Context Protocol (MCP) server that enables AI orchestration across multiple AI providers (Gemini, OpenAI, Azure, XAI, OpenRouter, Ollama, etc.). It provides specialized tools for code analysis, debugging, planning, and collaborative AI-to-AI conversations with conversation continuity.
 
-Before making any changes or submitting PRs, always run the comprehensive quality checks:
+**Key Differentiator**: Multi-turn conversation memory that persists across stateless MCP protocol requests, enabling true AI-to-AI collaboration where different tools can seamlessly continue conversations started by other tools.
 
+## Architecture Overview
+
+### Core Components
+
+**server.py** - MCP protocol boundary and orchestration hub
+- Handles MCP tool discovery, registration, and execution
+- Implements conversation thread reconstruction for stateful continuity
+- Performs early model resolution and validation at MCP boundary
+- Routes tool calls to appropriate handlers with pre-resolved model context
+- Key functions: `handle_call_tool()`, `reconstruct_thread_context()`, `configure_providers()`
+
+**utils/conversation_memory.py** - Stateful conversation system for stateless protocol
+- In-memory conversation persistence with UUID-based thread identification
+- Dual prioritization strategy: newest-first file prioritization, newest-first turn collection with chronological presentation
+- Cross-tool continuation support (e.g., analyze → codereview → debug with full context)
+- Token-aware history building with intelligent file/turn exclusion
+- Key functions: `create_thread()`, `add_turn()`, `build_conversation_history()`, `get_conversation_file_list()`
+
+**providers/** - AI model provider abstractions
+- `base.py`: Abstract `ModelProvider` interface defining provider contract
+- `registry.py`: Central `ModelProviderRegistry` for provider management and model resolution
+- `shared/`: Common types (`ModelCapabilities`, `ModelResponse`, `ProviderType`)
+- `registries/`: Model catalogs for each provider (Gemini, OpenAI, Azure, XAI, OpenRouter, Custom)
+- Provider initialization order: Native APIs → Custom endpoints → OpenRouter (catch-all)
+
+**tools/** - Specialized AI-powered tool implementations
+- `simple/base.py`: Base class for simple single-call tools (`SimpleTool`)
+- `workflow/base.py`: Base class for multi-step workflow tools (`WorkflowTool`)
+- Each tool defines: name, description, input schema, model requirements, execution logic
+- Tools can be disabled via `DISABLED_TOOLS` environment variable
+- Key tools: chat, clink (CLI bridge), thinkdeep, planner, consensus, codereview, precommit, debug
+
+**systemprompts/** - System prompts for each tool
+- Centralized prompt definitions separate from tool logic
+- CS-Brain base class pattern for structured reasoning workflows
+- Each tool has a corresponding `<tool>_prompt.py` module
+
+**utils/** - Shared utilities and services
+- `file_utils.py`: File reading with token estimation and line number formatting
+- `model_context.py`: Model-specific token allocation and capability management
+- `model_restrictions.py`: Provider-specific model allowlist enforcement
+- `client_info.py`: MCP client detection and friendly name mapping
+- `token_utils.py`: Token estimation and budget validation
+
+### Critical Architectural Patterns
+
+**Conversation Continuity Across Stateless Protocol**
+The MCP protocol is stateless (each request is independent), but Zen bridges this gap:
+1. Tools create conversation threads with `create_thread()` returning UUID
+2. Each turn stored with `add_turn()` including files, tool attribution, model metadata
+3. Subsequent requests include `continuation_id` parameter
+4. `server.py:reconstruct_thread_context()` loads full history from memory
+5. `build_conversation_history()` embeds conversation + files into tool prompt
+6. Any tool can continue conversations started by other tools
+
+**Dual File Prioritization Strategy**
+When same file appears in multiple conversation turns:
+- Collection: Walk backwards through turns (newest → oldest)
+- Priority: First occurrence (newest) wins, older duplicates excluded
+- Token limits: Older files excluded first when budget constrained
+- Applies across entire conversation chain, not just current thread
+
+**Early Model Resolution at MCP Boundary**
+`server.py:handle_call_tool()` resolves models before tool execution:
+1. Parse `model:option` format (handles OpenRouter suffixes, Ollama tags, consensus stances)
+2. Auto mode → specific model via `get_preferred_fallback_model()`
+3. Validate model availability against restrictions
+4. Create `ModelContext` with capabilities and token allocation
+5. Pass `_model_context` to tool for consistent behavior
+
+**Provider Registry Pattern**
+`ModelProviderRegistry` uses lazy initialization singleton pattern:
+- Providers registered at startup via `configure_providers()`
+- Provider instances created on first use (not at registration)
+- Model resolution cascades through providers in priority order
+- Restriction service filters available models per provider
+
+## Development Commands
+
+### Environment Setup
 ```bash
-# Activate virtual environment first
-source venv/bin/activate
+# Setup server (handles venv, dependencies, .env, MCP config)
+./run-server.sh
 
-# Run all quality checks (linting, formatting, tests)
-./code_quality_checks.sh
+# View server logs in real-time
+./run-server.sh -f
+tail -f logs/mcp_server.log
 ```
 
-This script automatically runs:
-- Ruff linting with auto-fix
-- Black code formatting 
-- Import sorting with isort
-- Complete unit test suite (excluding integration tests)
-- Verification that all checks pass 100%
-
-**Run Integration Tests (requires API keys):**
+### Code Quality & Testing
 ```bash
-# Run integration tests that make real API calls
+# Activate virtual environment (REQUIRED before any command)
+source .zen_venv/bin/activate
+
+# Run ALL quality checks (linting + formatting + tests) - USE THIS BEFORE COMMITS
+./code_quality_checks.sh
+
+# Run unit tests only (excludes integration tests requiring API keys)
+python -m pytest tests/ -v -m "not integration"
+
+# Run specific test file
+python -m pytest tests/test_conversation_memory.py -v
+
+# Run specific test function
+python -m pytest tests/test_conversation_memory.py::TestConversationMemory::test_create_thread -v
+
+# Run integration tests (requires Ollama running locally - FREE unlimited)
 ./run_integration_tests.sh
 
 # Run integration tests + simulator tests
 ./run_integration_tests.sh --with-simulator
 ```
 
-### Server Management
-
-#### Setup/Update the Server
+### Simulator Testing (End-to-End Validation)
 ```bash
-# Run setup script (handles everything)
-./run-server.sh
-```
-
-This script will:
-- Set up Python virtual environment
-- Install all dependencies
-- Create/update .env file
-- Configure MCP with Claude
-- Verify API keys
-
-#### View Logs
-```bash
-# Follow logs in real-time
-./run-server.sh -f
-
-# Or manually view logs
-tail -f logs/mcp_server.log
-```
-
-### Log Management
-
-#### View Server Logs
-```bash
-# View last 500 lines of server logs
-tail -n 500 logs/mcp_server.log
-
-# Follow logs in real-time
-tail -f logs/mcp_server.log
-
-# View specific number of lines
-tail -n 100 logs/mcp_server.log
-
-# Search logs for specific patterns
-grep "ERROR" logs/mcp_server.log
-grep "tool_name" logs/mcp_activity.log
-```
-
-#### Monitor Tool Executions Only
-```bash
-# View tool activity log (focused on tool calls and completions)
-tail -n 100 logs/mcp_activity.log
-
-# Follow tool activity in real-time
-tail -f logs/mcp_activity.log
-
-# Use simple tail commands to monitor logs
-tail -f logs/mcp_activity.log | grep -E "(TOOL_CALL|TOOL_COMPLETED|ERROR|WARNING)"
-```
-
-#### Available Log Files
-
-**Current log files (with proper rotation):**
-```bash
-# Main server log (all activity including debug info) - 20MB max, 10 backups
-tail -f logs/mcp_server.log
-
-# Tool activity only (TOOL_CALL, TOOL_COMPLETED, etc.) - 20MB max, 5 backups  
-tail -f logs/mcp_activity.log
-```
-
-**For programmatic log analysis (used by tests):**
-```python
-# Import the LogUtils class from simulator tests
-from simulator_tests.log_utils import LogUtils
-
-# Get recent logs
-recent_logs = LogUtils.get_recent_server_logs(lines=500)
-
-# Check for errors
-errors = LogUtils.check_server_logs_for_errors()
-
-# Search for specific patterns
-matches = LogUtils.search_logs_for_pattern("TOOL_CALL.*debug")
-```
-
-### Testing
-
-Simulation tests are available to test the MCP server in a 'live' scenario, using your configured
-API keys to ensure the models are working and the server is able to communicate back and forth. 
-
-**IMPORTANT**: After any code changes, restart your Claude session for the changes to take effect.
-
-#### Run All Simulator Tests
-```bash
-# Run the complete test suite
-python communication_simulator_test.py
-
-# Run tests with verbose output
-python communication_simulator_test.py --verbose
-```
-
-#### Quick Test Mode (Recommended for Time-Limited Testing)
-```bash
-# Run quick test mode - 6 essential tests that provide maximum functionality coverage
+# Quick test mode - 6 essential tests covering core functionality
 python communication_simulator_test.py --quick
 
-# Run quick test mode with verbose output
-python communication_simulator_test.py --quick --verbose
-```
+# Run all simulator tests
+python communication_simulator_test.py
 
-**Quick mode runs these 6 essential tests:**
-- `cross_tool_continuation` - Cross-tool conversation memory testing (chat, thinkdeep, codereview, analyze, debug)
-- `conversation_chain_validation` - Core conversation threading and memory validation
-- `consensus_workflow_accurate` - Consensus tool with flash model and stance testing
-- `codereview_validation` - CodeReview tool with flash model and multi-step workflows
-- `planner_validation` - Planner tool with flash model and complex planning workflows
-- `token_allocation_validation` - Token allocation and conversation history buildup testing
-
-**Why these 6 tests:** They cover the core functionality including conversation memory (`utils/conversation_memory.py`), chat tool functionality, file processing and deduplication, model selection (flash/flashlite/o3), and cross-tool conversation workflows. These tests validate the most critical parts of the system in minimal time.
-
-**Note:** Some workflow tools (analyze, codereview, planner, consensus, etc.) require specific workflow parameters and may need individual testing rather than quick mode testing.
-
-#### Run Individual Simulator Tests (For Detailed Testing)
-```bash
-# List all available tests
+# List available tests
 python communication_simulator_test.py --list-tests
 
-# RECOMMENDED: Run tests individually for better isolation and debugging
-python communication_simulator_test.py --individual basic_conversation
-python communication_simulator_test.py --individual content_validation
+# Run individual test for isolation and debugging (RECOMMENDED)
 python communication_simulator_test.py --individual cross_tool_continuation
-python communication_simulator_test.py --individual memory_validation
+python communication_simulator_test.py --individual conversation_chain_validation
 
-# Run multiple specific tests
-python communication_simulator_test.py --tests basic_conversation content_validation
-
-# Run individual test with verbose output for debugging
+# Run with verbose output
 python communication_simulator_test.py --individual memory_validation --verbose
 ```
 
-Available simulator tests include:
-- `basic_conversation` - Basic conversation flow with chat tool
-- `content_validation` - Content validation and duplicate detection
-- `per_tool_deduplication` - File deduplication for individual tools
-- `cross_tool_continuation` - Cross-tool conversation continuation scenarios
-- `cross_tool_comprehensive` - Comprehensive cross-tool file deduplication and continuation
-- `line_number_validation` - Line number handling validation across tools
-- `memory_validation` - Conversation memory validation
-- `model_thinking_config` - Model-specific thinking configuration behavior
-- `o3_model_selection` - O3 model selection and usage validation
-- `ollama_custom_url` - Ollama custom URL endpoint functionality
-- `openrouter_fallback` - OpenRouter fallback behavior when only provider
-- `openrouter_models` - OpenRouter model functionality and alias mapping
-- `token_allocation_validation` - Token allocation and conversation history validation
-- `testgen_validation` - TestGen tool validation with specific test function
-- `refactor_validation` - Refactor tool validation with codesmells
-- `conversation_chain_validation` - Conversation chain and threading validation
-- `consensus_stance` - Consensus tool validation with stance steering (for/against/neutral)
+**IMPORTANT**: After code changes, restart Claude session for changes to take effect in MCP server.
 
-**Note**: All simulator tests should be run individually for optimal testing and better error isolation.
-
-#### Run Unit Tests Only
+### Linting & Formatting
 ```bash
-# Run all unit tests (excluding integration tests that require API keys)
-python -m pytest tests/ -v -m "not integration"
-
-# Run specific test file
-python -m pytest tests/test_refactor.py -v
-
-# Run specific test function
-python -m pytest tests/test_refactor.py::TestRefactorTool::test_format_response -v
-
-# Run tests with coverage
-python -m pytest tests/ --cov=. --cov-report=html -m "not integration"
-```
-
-#### Run Integration Tests (Uses Free Local Models)
-
-**Setup Requirements:**
-```bash
-# 1. Install Ollama (if not already installed)
-# Visit https://ollama.ai or use brew install ollama
-
-# 2. Start Ollama service
-ollama serve
-
-# 3. Pull a model (e.g., llama3.2)
-ollama pull llama3.2
-
-# 4. Set environment variable for custom provider
-export CUSTOM_API_URL="http://localhost:11434"
-```
-
-**Run Integration Tests:**
-```bash
-# Run integration tests that make real API calls to local models
-python -m pytest tests/ -v -m "integration"
-
-# Run specific integration test
-python -m pytest tests/test_prompt_regression.py::TestPromptIntegration::test_chat_normal_prompt -v
-
-# Run all tests (unit + integration)
-python -m pytest tests/ -v
-```
-
-**Note**: Integration tests use the local-llama model via Ollama, which is completely FREE to run unlimited times. Requires `CUSTOM_API_URL` environment variable set to your local Ollama endpoint. They can be run safely in CI/CD but are excluded from code quality checks to keep them fast.
-
-### Development Workflow
-
-#### Before Making Changes
-1. Ensure virtual environment is activated: `source .zen_venv/bin/activate`
-2. Run quality checks: `./code_quality_checks.sh`
-3. Check logs to ensure server is healthy: `tail -n 50 logs/mcp_server.log`
-
-#### After Making Changes
-1. Run quality checks again: `./code_quality_checks.sh`
-2. Run integration tests locally: `./run_integration_tests.sh`
-3. Run quick test mode for fast validation: `python communication_simulator_test.py --quick`
-4. Run relevant specific simulator tests if needed: `python communication_simulator_test.py --individual <test_name>`
-5. Check logs for any issues: `tail -n 100 logs/mcp_server.log`
-6. Restart Claude session to use updated code
-
-#### Before Committing/PR
-1. Final quality check: `./code_quality_checks.sh`
-2. Run integration tests: `./run_integration_tests.sh`
-3. Run quick test mode: `python communication_simulator_test.py --quick`
-4. Run full simulator test suite (optional): `./run_integration_tests.sh --with-simulator`
-5. Verify all tests pass 100%
-
-### Common Troubleshooting
-
-#### Server Issues
-```bash
-# Check if Python environment is set up correctly
-./run-server.sh
-
-# View recent errors
-grep "ERROR" logs/mcp_server.log | tail -20
-
-# Check virtual environment
-which python
-# Should show: .../zen-mcp-server/.zen_venv/bin/python
-```
-
-#### Test Failures
-```bash
-# First try quick test mode to see if it's a general issue
-python communication_simulator_test.py --quick --verbose
-
-# Run individual failing test with verbose output
-python communication_simulator_test.py --individual <test_name> --verbose
-
-# Check server logs during test execution
-tail -f logs/mcp_server.log
-
-# Run tests with debug output
-LOG_LEVEL=DEBUG python communication_simulator_test.py --individual <test_name>
-```
-
-#### Linting Issues
-```bash
-# Auto-fix most linting issues
+# Auto-fix issues
 ruff check . --fix
 black .
 isort .
 
-# Check what would be changed without applying
+# Check without fixing
 ruff check .
 black --check .
 isort --check-only .
 ```
 
-### File Structure Context
+## Key Files to Understand
 
-- `./code_quality_checks.sh` - Comprehensive quality check script
-- `./run-server.sh` - Server setup and management
-- `communication_simulator_test.py` - End-to-end testing framework
-- `simulator_tests/` - Individual test modules
-- `tests/` - Unit test suite
-- `tools/` - MCP tool implementations
-- `providers/` - AI provider implementations
-- `systemprompts/` - System prompt definitions
-- `logs/` - Server log files
+**Conversation Memory System**
+- `utils/conversation_memory.py` - Thread management, history building, file prioritization (lines 1-120 for architecture, 433-636 for file prioritization, 638-1027 for history building)
+- `server.py` - Thread reconstruction at MCP boundary (lines 967-1286 for `reconstruct_thread_context()`)
 
-### Environment Requirements
+**Provider System**
+- `providers/base.py` - Abstract provider interface (lines 1-50 for interface definition)
+- `providers/registry.py` - Provider registry and model resolution
+- `server.py` - Provider configuration (lines 379-628 for `configure_providers()`)
 
-- Python 3.9+ with virtual environment
-- All dependencies from `requirements.txt` installed
-- Proper API keys configured in `.env` file
+**Tool System**
+- `tools/simple/base.py` - Simple tool base class
+- `tools/workflow/base.py` - Workflow tool base class
+- `tools/chat.py` - Example simple tool with conversation support
+- `server.py` - Tool registration and filtering (lines 260-282 for tool registry)
 
-This guide provides everything needed to efficiently work with the Zen MCP Server codebase using Claude. Always run quality checks before and after making changes to ensure code integrity.
+**Model Context & Token Management**
+- `utils/model_context.py` - Model capabilities and token allocation
+- `utils/file_utils.py` - File reading with token estimation
+- `utils/token_utils.py` - Token estimation utilities
+
+## Configuration & Environment
+
+### Essential Environment Variables
+```bash
+# API Keys (at least one required)
+GEMINI_API_KEY=your_key_here
+OPENAI_API_KEY=your_key_here
+OPENROUTER_API_KEY=your_key_here
+XAI_API_KEY=your_key_here
+AZURE_OPENAI_API_KEY=your_key_here
+AZURE_OPENAI_ENDPOINT=your_endpoint_here
+
+# Custom/Local Models (Ollama, vLLM, etc.)
+CUSTOM_API_URL=http://localhost:11434
+CUSTOM_API_KEY=  # Optional, empty for Ollama
+CUSTOM_MODEL_NAME=llama3.2
+
+# Model Configuration
+DEFAULT_MODEL=auto  # or specific model name
+DEFAULT_THINKING_MODE_THINKDEEP=medium  # low, medium, high, max
+
+# Tool Configuration (disable unused tools to save context)
+DISABLED_TOOLS=analyze,refactor,testgen,secaudit,docgen,tracer
+
+# Conversation Limits
+MAX_CONVERSATION_TURNS=50  # Maximum turns per conversation thread
+CONVERSATION_TIMEOUT_HOURS=3  # Thread expiration time
+
+# Model Restrictions (optional allowlists)
+GOOGLE_ALLOWED_MODELS=gemini-2.5-flash,gemini-2.5-pro
+OPENAI_ALLOWED_MODELS=o3-mini,gpt-5-pro
+
+# Logging
+LOG_LEVEL=DEBUG  # DEBUG, INFO, WARNING, ERROR
+ZEN_STDIO_SILENT=0  # Set to 1 to mute stderr logging for MCP stdio mode
+
+# Environment Override (for Claude Code/Desktop conflicts)
+ZEN_MCP_FORCE_ENV_OVERRIDE=1  # .env overrides system environment
+```
+
+### Tool Disabling Strategy
+Only enable tools you need - each tool consumes context window space:
+- **Always enabled**: version, listmodels (cannot be disabled)
+- **Enabled by default**: chat, clink, thinkdeep, planner, consensus, codereview, precommit, debug, apilookup, challenge
+- **Disabled by default**: analyze, refactor, testgen, secaudit, docgen, tracer
+
+## Common Development Workflows
+
+### Adding a New Tool
+1. Create `tools/your_tool.py` extending `SimpleTool` or `WorkflowTool`
+2. Create `systemprompts/your_tool_prompt.py` with system prompt
+3. Add to `TOOLS` dictionary in `server.py`
+4. Add to `PROMPT_TEMPLATES` in `server.py` for CLI shortcuts
+5. Add unit tests in `tests/test_your_tool.py`
+6. Add simulator test in `simulator_tests/test_your_tool.py`
+7. Update documentation in `docs/tools/your_tool.md`
+
+### Adding a New Provider
+1. Create `providers/your_provider.py` extending `ModelProvider`
+2. Create `providers/registries/your_provider.py` with model catalog
+3. Add provider registration in `server.py:configure_providers()`
+4. Add API key environment variable
+5. Add unit tests in `tests/test_your_provider.py`
+6. Update `docs/adding_providers.md` with setup instructions
+
+### Debugging Conversation Continuity Issues
+1. Check logs: `tail -f logs/mcp_server.log | grep CONVERSATION_DEBUG`
+2. Verify thread creation: Look for `[THREAD] Created new thread <uuid>`
+3. Check thread retrieval: Look for `[CONVERSATION_DEBUG] Looking up thread <uuid>`
+4. Validate file prioritization: Look for `[FILES]` log entries showing newest-first ordering
+5. Monitor token allocation: Look for `[CONVERSATION_DEBUG] Token budget calculation`
+6. Use simulator tests: `python communication_simulator_test.py --individual cross_tool_continuation --verbose`
+
+### Before Making Changes
+1. Activate venv: `source .zen_venv/bin/activate`
+2. Run quality checks: `./code_quality_checks.sh`
+3. Check server logs: `tail -n 50 logs/mcp_server.log`
+
+### After Making Changes
+1. Run quality checks: `./code_quality_checks.sh`
+2. Run integration tests: `./run_integration_tests.sh`
+3. Run quick simulator tests: `python communication_simulator_test.py --quick`
+4. Check logs for errors: `tail -n 100 logs/mcp_server.log`
+5. **Restart Claude session** to load updated MCP server code
+
+### Before Committing/PR
+1. Final quality check: `./code_quality_checks.sh` (must pass 100%)
+2. Run integration tests: `./run_integration_tests.sh`
+3. Run quick tests: `python communication_simulator_test.py --quick`
+4. Optional full suite: `./run_integration_tests.sh --with-simulator`
+5. Follow commit format: `feat:`, `fix:`, `docs:`, `chore:`, etc.
+
+## Testing Strategy
+
+**Unit Tests** (`tests/`) - Fast, no API keys required
+- Mock providers, isolated component testing
+- Run before every commit: `python -m pytest tests/ -v -m "not integration"`
+
+**Integration Tests** (`tests/` with `@pytest.mark.integration`) - Local models via Ollama
+- Real API calls to local Ollama models (FREE unlimited)
+- Requires Ollama running: `ollama serve` + `ollama pull llama3.2`
+- Run with: `./run_integration_tests.sh` or `python -m pytest tests/ -v -m "integration"`
+
+**Simulator Tests** (`simulator_tests/`) - End-to-end validation
+- Tests full MCP server communication flow
+- Uses configured API keys (Gemini/OpenAI/etc.)
+- Run individually for best isolation: `python communication_simulator_test.py --individual <test_name>`
+- Quick mode for time-limited testing: `python communication_simulator_test.py --quick`
+
+## Troubleshooting
+
+### Common Issues
+
+**Linting Failures**
+```bash
+ruff check . --fix
+black .
+isort .
+```
+
+**Test Failures**
+```bash
+# Quick diagnosis
+python communication_simulator_test.py --quick --verbose
+
+# Detailed investigation
+python communication_simulator_test.py --individual <test_name> --verbose
+tail -f logs/mcp_server.log
+```
+
+**Server Not Starting**
+```bash
+./run-server.sh  # Re-run setup
+grep "ERROR" logs/mcp_server.log | tail -20
+which python  # Should show .zen_venv/bin/python
+```
+
+**Conversation Context Lost**
+- Check thread ID format (must be valid UUID)
+- Verify thread hasn't expired (default 3 hours)
+- Check logs for thread lookup: `grep "thread:<uuid>" logs/mcp_server.log`
+- Ensure MCP server process is persistent (not restarting between requests)
+
+## Documentation References
+
+- **Setup**: `docs/getting-started.md` - Complete installation guide
+- **Tools**: `docs/tools/` - Individual tool documentation
+- **Providers**: `docs/adding_providers.md` - Provider setup and configuration
+- **Advanced**: `docs/advanced-usage.md` - Complex workflows and power features
+- **Configuration**: `docs/configuration.md` - Environment variables and restrictions
+- **Troubleshooting**: `docs/troubleshooting.md` - Common issues and solutions
+- **Contributing**: `docs/contributions.md` - Code standards and PR process
+- **Prompt Examples**: `docs/zen_prompt_playbook.md` - Tool usage templates
+
+## Code Standards
+
+- Python 3.9+ with type hints
+- Black formatting (120 char line limit)
+- isort for import organization (stdlib → third-party → local)
+- Ruff linting (pycodestyle, pyflakes, bugbear, comprehension, pyupgrade)
+- Docstrings for all public functions and classes
+- Inheritance-based contracts over dynamic attribute checking
+- Prefer explicit over implicit behavior
+
+## Important Notes
+
+1. **Virtual Environment**: Always activate `.zen_venv` before running commands
+2. **Session Restart**: Changes to Python code require Claude session restart
+3. **Log Files**: `logs/mcp_server.log` (all activity), `logs/mcp_activity.log` (tool calls only)
+4. **Token Management**: File size checks at MCP boundary, conversation history token allocation
+5. **Test Isolation**: Run simulator tests individually for better debugging
+6. **Commit Format**: Use conventional commit prefixes (feat/fix/docs/chore/test/ci)

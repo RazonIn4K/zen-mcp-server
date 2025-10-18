@@ -57,7 +57,7 @@ if [[ -d "${COPILOT_DIR}" && -f "${COPILOT_DIR}/package.json" && -f "${COPILOT_D
       log "Installing copilot-api dependencies with bun..."
       bun install --silent >&2
     fi
-    bun run start -- "${COPILOT_ARGS[@]}"
+    bun run start -- start "${COPILOT_ARGS[@]}"
   ) &
   COPILOT_PID=$!
 else
