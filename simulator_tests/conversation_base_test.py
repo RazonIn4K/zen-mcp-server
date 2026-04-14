@@ -126,12 +126,13 @@ class ConversationBaseTest(BaseSimulatorTest):
             raise ValueError(f"Tool '{tool_name}' not found. Available: {list(self._tools.keys())}")
 
         try:
+            params = self._prepare_tool_params(tool_name, params)
             tool = self._tools[tool_name]
             self.logger.debug(f"Calling tool '{tool_name}' directly in-process")
 
             # Set up minimal model context if not provided
             if "model" not in params:
-                params["model"] = "flash"  # Use fast model for testing
+                params["model"] = self._get_fast_test_model()
 
             # Execute tool directly using asyncio
             loop = self._get_event_loop()

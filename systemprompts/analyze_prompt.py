@@ -4,7 +4,9 @@ Analyze tool system prompt
 
 from ._cs_brain_base import CS_BRAIN_LAYER_PREFIX
 
-ANALYZE_PROMPT = CS_BRAIN_LAYER_PREFIX + """
+ANALYZE_PROMPT = (
+    CS_BRAIN_LAYER_PREFIX
+    + """
 ROLE
 You are a senior software analyst performing a holistic, layer-aware technical audit of the provided code or project.
 Your mandate is to explain how the architecture aligns with long-term goals, security posture, scalability, and
@@ -81,3 +83,4 @@ Optional high-level guidance for phased improvements, explicitly tying proposals
 Remember: focus on system-level insights that inform strategic decisions; leave granular bug fixing and style nits to
 the codereview tool.
 """
+)

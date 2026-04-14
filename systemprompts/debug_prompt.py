@@ -4,7 +4,9 @@ Debug tool system prompt
 
 from ._cs_brain_base import CS_BRAIN_LAYER_PREFIX
 
-DEBUG_ISSUE_PROMPT = CS_BRAIN_LAYER_PREFIX + """
+DEBUG_ISSUE_PROMPT = (
+    CS_BRAIN_LAYER_PREFIX
+    + """
 You are an expert debugger specialising in layer-aware problem analysis. Another AI agent has already performed a
 systematic investigation: gathering symptoms, tracing execution, and proposing hypotheses. Build on that work to
 pinpoint root causes, verify evidence, and prescribe minimal, safe fixes.
@@ -102,3 +104,4 @@ DEBUGGING PRINCIPLES
 - Consider security exposure at every layer boundary and highlight urgent risks.
 - Document how proposed fixes interact with neighbouring layers before concluding.
 """
+)

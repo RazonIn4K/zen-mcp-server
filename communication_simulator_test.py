@@ -39,12 +39,10 @@ Available tests:
     conversation_chain_validation - Conversation chain continuity validation
 
 Quick Test Mode (for time-limited testing):
-    Use --quick to run the essential 6 tests that provide maximum coverage:
+    Use --quick to run the essential provider-agnostic tests that provide maximum coverage:
     - cross_tool_continuation (cross-tool conversation memory)
     - basic_conversation (basic chat functionality)
     - content_validation (content validation and deduplication)
-    - model_thinking_config (flash/flashlite model testing)
-    - o3_model_selection (o3 model selection testing)
     - per_tool_deduplication (file deduplication for individual tools)
 
 Examples:
@@ -57,7 +55,7 @@ Examples:
     # Run a single test individually (with full standalone setup)
     python communication_simulator_test.py --individual content_validation
 
-    # Run quick test mode (essential 6 tests for time-limited testing)
+    # Run quick test mode (essential 4 tests for time-limited testing)
     python communication_simulator_test.py --quick
 
     # Force setup standalone server environment before running tests
@@ -113,8 +111,6 @@ class CommunicationSimulator:
             "cross_tool_continuation",  # Cross-tool conversation memory
             "basic_conversation",  # Basic chat functionality
             "content_validation",  # Content validation and deduplication
-            "model_thinking_config",  # Flash/flashlite model testing
-            "o3_model_selection",  # O3 model selection testing
             "per_tool_deduplication",  # File deduplication for individual tools
         ]
 
@@ -129,7 +125,7 @@ class CommunicationSimulator:
         }
 
         # Test result tracking
-        self.test_results = dict.fromkeys(self.test_registry.keys(), False)
+        self.test_results = dict.fromkeys(self.test_registry.keys())
 
     def _get_python_path(self) -> str:
         """Get the Python path for the virtual environment"""
@@ -364,10 +360,12 @@ class CommunicationSimulator:
         self.logger.info("ZEN MCP COMMUNICATION SIMULATOR - TEST RESULTS SUMMARY")
         self.logger.info("=" * 70)
 
-        passed_count = sum(1 for result in self.test_results.values() if result)
-        total_count = len(self.test_results)
+        tests_to_report = self.selected_tests or list(self.test_results.keys())
+        passed_count = sum(1 for test_name in tests_to_report if self.test_results.get(test_name))
+        total_count = len(tests_to_report)
 
-        for test_name, result in self.test_results.items():
+        for test_name in tests_to_report:
+            result = self.test_results.get(test_name)
             status = "PASS" if result else "FAIL"
             # Get test description
             temp_instance = self.test_registry[test_name](verbose=False)
@@ -457,7 +455,7 @@ def parse_arguments():
     parser.add_argument("--list-tests", action="store_true", help="List available tests and exit")
     parser.add_argument("--individual", "-i", help="Run a single test individually")
     parser.add_argument(
-        "--quick", "-q", action="store_true", help="Run quick test mode (6 essential tests for time-limited testing)"
+        "--quick", "-q", action="store_true", help="Run quick test mode (4 essential tests for time-limited testing)"
     )
     parser.add_argument(
         "--setup", action="store_true", help="Force setup standalone server environment using run-server.sh"

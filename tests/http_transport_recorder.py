@@ -331,11 +331,7 @@ class ReplayTransport(httpx.MockTransport):
         """Check if this is an o3 model request."""
         model = content_dict.get("model") or ""
         model_lower = str(model).lower()
-        return (
-            model_lower.startswith("o3")
-            or model_lower.startswith("gpt-5")
-            or model_lower.startswith("openai/gpt-5")
-        )
+        return model_lower.startswith("o3") or model_lower.startswith("gpt-5") or model_lower.startswith("openai/gpt-5")
 
     def _extract_semantic_fields(self, content_dict: dict) -> dict:
         """Extract only semantic fields for matching, ignoring volatile prompts.

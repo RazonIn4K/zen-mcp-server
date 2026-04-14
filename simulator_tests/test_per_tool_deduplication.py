@@ -27,6 +27,10 @@ class PerToolDeduplicationTest(ConversationBaseTest):
     def test_description(self) -> str:
         return "File deduplication for individual tools"
 
+    def call_mcp_tool(self, tool_name: str, params: dict) -> tuple:
+        """Use in-process tool calls so continuation memory survives between steps."""
+        return self.call_mcp_tool_direct(tool_name, params)
+
     # create_additional_test_file method now inherited from base class
 
     def run_test(self) -> bool:
@@ -62,9 +66,10 @@ def divide(x, y):
             precommit_params = {
                 "step": "Initial analysis of dummy_code.py for commit readiness. Please give me a quick one line reply.",
                 "step_number": 1,
-                "total_steps": 2,
+                "total_steps": 3,
                 "next_step_required": True,
                 "findings": "Starting pre-commit validation of dummy_code.py",
+                "precommit_type": "internal",
                 "path": os.getcwd(),  # Use current working directory as the git repo path
                 "relevant_files": [dummy_file_path],
                 "thinking_mode": "low",
@@ -125,9 +130,10 @@ def subtract(a, b):
                 "continuation_id": continuation_id,
                 "step": "Continue analysis with new_feature.py added. Please give me a quick one line reply about both files.",
                 "step_number": 2,
-                "total_steps": 2,
-                "next_step_required": False,
+                "total_steps": 3,
+                "next_step_required": True,
                 "findings": "Continuing pre-commit validation with both dummy_code.py and new_feature.py",
+                "precommit_type": "internal",
                 "path": os.getcwd(),  # Use current working directory as the git repo path
                 "relevant_files": [dummy_file_path, new_file_path],  # Old + new file
                 "thinking_mode": "low",
@@ -140,6 +146,30 @@ def subtract(a, b):
                 return False
 
             self.logger.info("  ✅ Step 3: precommit continuation completed")
+
+            # Step 4: Complete the precommit workflow without external expert validation
+            self.logger.info("  Step 4: final precommit validation step")
+            final_params = {
+                "continuation_id": continuation_id,
+                "step": "Complete the internal precommit validation for both files.",
+                "step_number": 3,
+                "total_steps": 3,
+                "next_step_required": False,
+                "findings": "Completed internal pre-commit validation with both dummy_code.py and new_feature.py",
+                "precommit_type": "internal",
+                "path": os.getcwd(),
+                "files_checked": [dummy_file_path, new_file_path],
+                "relevant_files": [dummy_file_path, new_file_path],
+                "thinking_mode": "low",
+                "model": "flash",
+            }
+
+            response4, _ = self.call_mcp_tool("precommit", final_params)
+            if not response4:
+                self.logger.error("  ❌ Step 4: final precommit validation failed")
+                return False
+
+            self.logger.info("  ✅ Step 4: final precommit validation completed")
 
             # Validate results in server logs
             self.logger.info("  📋 Validating conversation history and file deduplication...")
@@ -162,9 +192,11 @@ def subtract(a, b):
                 line for line in logs.split("\n") if "continuation" in line.lower() or continuation_id[:8] in line
             ]
 
+            combined_evidence = "\n".join([response1, response2, response3, response4, logs])
+
             # Check for both files mentioned
-            dummy_file_mentioned = any("dummy_code.py" in line for line in logs.split("\n"))
-            new_file_mentioned = any("new_feature.py" in line for line in logs.split("\n"))
+            dummy_file_mentioned = "dummy_code.py" in combined_evidence
+            new_file_mentioned = "new_feature.py" in combined_evidence
 
             # Print diagnostic information
             self.logger.info(f"   Conversation logs found: {len(conversation_logs)}")

@@ -124,9 +124,69 @@ class Calculator:
         self.test_files = {"python": os.path.abspath(test_py), "config": os.path.abspath(test_config)}
         self.logger.debug(f"Created test files with absolute paths: {list(self.test_files.values())}")
 
+    def _get_fast_test_model(self) -> str:
+        """Return a fast model alias that is likely to work in the current test environment."""
+        explicit_model = os.environ.get("SIMULATOR_MODEL") or os.environ.get("MCP_SIMULATOR_MODEL")
+        if explicit_model:
+            return explicit_model
+
+        try:
+            from utils.env import get_env
+
+            custom_api_url = get_env("CUSTOM_API_URL", "") or ""
+            custom_allowed_models = (get_env("CUSTOM_ALLOWED_MODELS", "") or "").lower()
+        except Exception:
+            custom_api_url = ""
+            custom_allowed_models = ""
+
+        if custom_api_url:
+            preferred_custom_models = [
+                ("gemini-3-flash-preview", "copilot/gemini-flash"),
+                ("grok-code-fast-1", "copilot/grok-code"),
+                ("claude-haiku-4.5", "copilot/haiku"),
+                ("gpt-5.4-mini", "copilot/gpt-mini"),
+            ]
+            for allowed_model, alias in preferred_custom_models:
+                if (
+                    not custom_allowed_models
+                    or allowed_model in custom_allowed_models
+                    or alias in custom_allowed_models
+                ):
+                    return alias
+
+        if os.environ.get("GEMINI_API_KEY"):
+            return "flash"
+
+        if os.environ.get("OPENROUTER_API_KEY"):
+            return "flash"
+
+        if os.environ.get("OPENAI_API_KEY"):
+            return "mini"
+
+        return "auto"
+
+    def _normalize_tool_params_for_environment(self, params: dict) -> dict:
+        """Replace legacy simulator aliases with an available test model when needed."""
+        normalized = dict(params)
+        if normalized.get("model") == "flash":
+            replacement_model = self._get_fast_test_model()
+            if replacement_model != "flash":
+                self.logger.debug("Rewriting simulator model alias 'flash' to '%s'", replacement_model)
+            normalized["model"] = replacement_model
+        return normalized
+
+    def _prepare_tool_params(self, tool_name: str, params: dict) -> dict:
+        """Normalize test parameters for the current server schema and environment."""
+        normalized = self._normalize_tool_params_for_environment(params)
+        if tool_name == "chat" and "working_directory" not in normalized:
+            normalized["working_directory"] = os.getcwd()
+        return normalized
+
     def call_mcp_tool(self, tool_name: str, params: dict) -> tuple[Optional[str], Optional[str]]:
         """Call an MCP tool via standalone server"""
         try:
+            params = self._prepare_tool_params(tool_name, params)
+
             # Prepare the MCP initialization and tool call sequence
             init_request = {
                 "jsonrpc": "2.0",

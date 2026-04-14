@@ -10,7 +10,7 @@ Use these snippets as copy‑and‑paste starters for Zen MCP tool calls. Each t
 ```yaml
 Tool: chat
 Arguments:
-  model: copilot/gemini-2-5-pro
+  model: copilot/gemini
   working_directory: {{ABS_PATH}}
   prompt: |
     {{YOUR_REQUEST}}
@@ -29,7 +29,7 @@ Summarize the current status of the CTF workspace, list open tasks, and suggest 
 ```yaml
 Tool: analyze
 Arguments:
-  model: copilot/gemini-2-5-pro
+  model: copilot/gemini
   working_directory: {{ABS_PATH}}
   prompt: |
     Provide a step-by-step analysis of the selected files.
@@ -52,7 +52,7 @@ Inspect challenges/leaky_vault/app.py and challenges/caesars_cipher/app/server.p
 ```yaml
 Tool: codereview
 Arguments:
-  model: copilot/gemini-2-5-pro
+  model: copilot/gemini
   working_directory: {{ABS_PATH}}
   prompt: |
     Review the recent changes.
@@ -76,7 +76,7 @@ Highlight:
 ```yaml
 Tool: debug
 Arguments:
-  model: copilot/gemini-2-5-pro
+  model: copilot/gemini
   working_directory: {{ABS_PATH}}
   prompt: |
     Investigate the reported issue and isolate the root cause.
@@ -97,7 +97,7 @@ Trace through the launch sequence and tell me what configuration is missing.
 ```yaml
 Tool: testgen
 Arguments:
-  model: copilot/gemini-2-5-pro
+  model: copilot/gemini
   working_directory: {{ABS_PATH}}
   prompt: |
     Generate tests for the specified modules.
@@ -119,7 +119,7 @@ Explain how to run the tests afterward.
 ```yaml
 Tool: refactor
 Arguments:
-  model: copilot/gemini-2-5-pro
+  model: copilot/gemini
   working_directory: {{ABS_PATH}}
   prompt: |
     Identify refactoring opportunities and rank them by impact.
@@ -141,7 +141,7 @@ Scan the ctf.py runner.
 ```yaml
 Tool: planner
 Arguments:
-  model: copilot/gemini-2-5-pro
+  model: copilot/gemini
   working_directory: {{ABS_PATH}}
   prompt: |
     Build a multi-step plan with deliverables and checkpoints.
@@ -164,7 +164,7 @@ Include milestones for design, implementation, playtesting, and documentation.
 ```yaml
 Tool: thinkdeep
 Arguments:
-  model: copilot/gemini-2-5-pro
+  model: copilot/gemini
   working_directory: {{ABS_PATH}}
   prompt: |
     Perform a high-depth reasoning session on the topic.
@@ -188,7 +188,7 @@ Provide a recommendation with rationale.
 ```yaml
 Tool: consensus
 Arguments:
-  model: copilot/gemini-2-5-pro
+  model: copilot/gemini
   working_directory: {{ABS_PATH}}
   prompt: |
     Gather multiple stances before the final synthesis.
@@ -209,7 +209,7 @@ Summarize the key arguments and pick the most balanced recommendation.
 ```yaml
 Tool: clink
 Arguments:
-  model: copilot/gemini-2-5-pro
+  model: copilot/gemini
   working_directory: {{ABS_PATH}}
   prompt: |
     {{instructions for the external CLI agent}}
@@ -233,7 +233,7 @@ prompt: |
 ```yaml
 Tool: secaudit
 Arguments:
-  model: copilot/gemini-2-5-pro
+  model: copilot/gemini
   working_directory: {{ABS_PATH}}
   prompt: |
     Perform a security audit focusing on OWASP Top 10.
@@ -254,7 +254,7 @@ Include suggested mitigations and tests we should add.
 ```yaml
 Tool: precommit
 Arguments:
-  model: copilot/gemini-2-5-pro
+  model: copilot/gemini
   working_directory: {{ABS_PATH}}
   prompt: |
     Validate the change set before committing.
@@ -277,7 +277,7 @@ Check for:
 ```yaml
 Tool: apilookup
 Arguments:
-  model: copilot/gemini-2-5-pro
+  model: copilot/gemini
   working_directory: {{ABS_PATH}}
   prompt: |
     Research the latest information about {{API_OR_SDK}}.
@@ -298,7 +298,7 @@ Provide links to primary sources.
 ```yaml
 Tool: listmodels
 Arguments:
-  model: copilot/gemini-2-5-pro
+  model: copilot/gemini
   working_directory: {{ABS_PATH}}
   prompt: |
     Show all available models.
@@ -307,7 +307,7 @@ Arguments:
 ```yaml
 Tool: version
 Arguments:
-  model: copilot/gemini-2-5-pro
+  model: copilot/gemini
   working_directory: {{ABS_PATH}}
   prompt: |
     Report the current Zen server version and environment.

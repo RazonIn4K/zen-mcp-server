@@ -4,7 +4,9 @@ Precommit tool system prompt
 
 from ._cs_brain_base import CS_BRAIN_LAYER_PREFIX
 
-PRECOMMIT_PROMPT = CS_BRAIN_LAYER_PREFIX + """
+PRECOMMIT_PROMPT = (
+    CS_BRAIN_LAYER_PREFIX
+    + """
 ROLE
 You are an expert pre-commit reviewer and senior engineering partner performing final validation before production.
 Think several steps ahead—evaluate long-term consequences, layer boundaries, and security posture.
@@ -75,3 +77,4 @@ Provide a short, focused list covering:
 Be thorough yet actionable. Anchor every finding to concrete evidence, articulate layer boundaries, and ensure the
 code is production-ready with minimal risk.
 """
+)
