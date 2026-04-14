@@ -23,7 +23,6 @@ import re
 import sys
 from collections.abc import Iterable
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from urllib import error, request
@@ -51,6 +50,20 @@ OUTDATED_COPILOT_MODEL_IDS = {
 }
 
 ALIAS_SANITISE_PATTERN = re.compile(r"[^a-z0-9]+")
+SEMANTIC_COPILOT_ALIASES = {
+    "claude-opus-4.6": ["opus", "claude"],
+    "claude-sonnet-4.6": ["sonnet"],
+    "claude-haiku-4.5": ["haiku"],
+    "gemini-3.1-pro-preview": ["gemini"],
+    "gemini-3-flash-preview": ["gemini-flash"],
+    "gpt-5.4": ["gpt"],
+    "gpt-5.4-mini": ["gpt-mini"],
+    "gpt-5.3-codex": ["codex"],
+    "grok-code-fast-1": ["grok-code"],
+    "minimax-m2.5": ["minimax"],
+    "oswe-vscode-prime": ["raptor-prime", "raptor-mini"],
+    "oswe-vscode-secondary": ["raptor-secondary"],
+}
 
 DEFAULT_README = {
     "description": "Model metadata for local/self-hosted OpenAI-compatible endpoints (Custom provider).",
@@ -317,7 +330,19 @@ def infer_capabilities(model_id: str) -> dict[str, Any]:
     return result
 
 
-def build_aliases(prefix: str, model: CopilotModel, used_aliases: set[str]) -> list[str]:
+def coerce_aliases(value: Any) -> list[str]:
+    """Normalize aliases from an existing registry entry."""
+
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, list):
+        return [alias for alias in value if isinstance(alias, str)]
+    return []
+
+
+def build_aliases(
+    prefix: str, model: CopilotModel, used_aliases: set[str], existing_aliases: Iterable[str] = ()
+) -> list[str]:
     raw = f"{prefix}/{model.model_id}"
     slug_alias = f"{prefix}/{slugify(model.model_id)}"
 
@@ -327,6 +352,13 @@ def build_aliases(prefix: str, model: CopilotModel, used_aliases: set[str]) -> l
     display_alias = f"{prefix}/{display_slug}"
     if display_alias not in candidates:
         candidates.append(display_alias)
+
+    for semantic_alias in SEMANTIC_COPILOT_ALIASES.get(model.model_id, []):
+        candidates.append(f"{prefix}/{semantic_alias}")
+
+    for existing_alias in existing_aliases:
+        if existing_alias.startswith(f"{prefix}/"):
+            candidates.append(existing_alias)
 
     aliases: list[str] = []
 
@@ -350,14 +382,17 @@ def build_aliases(prefix: str, model: CopilotModel, used_aliases: set[str]) -> l
     return aliases
 
 
-def build_entry(prefix: str, model: CopilotModel, used_aliases: set[str]) -> dict[str, Any]:
+def build_entry(
+    prefix: str,
+    model: CopilotModel,
+    used_aliases: set[str],
+    existing_entry: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     capabilities = infer_capabilities(model.model_id)
-    aliases = build_aliases(prefix, model, used_aliases)
+    existing_aliases = coerce_aliases(existing_entry.get("aliases")) if existing_entry else []
+    aliases = build_aliases(prefix, model, used_aliases, existing_aliases)
 
-    description = (
-        f"{model.display_name} via GitHub Copilot proxy "
-        f"(vendor: {model.owned_by}, synced {datetime.now(timezone.utc).date().isoformat()})."
-    )
+    description = f"{model.display_name} via GitHub Copilot proxy (vendor: {model.owned_by})."
 
     entry: dict[str, Any] = {
         "model_name": model.model_id,
@@ -427,6 +462,24 @@ def retain_non_copilot_entries(models: Iterable[dict[str, Any]], prefix: str) ->
     return retained
 
 
+def existing_copilot_entries_by_model(models: Iterable[dict[str, Any]], prefix: str) -> dict[str, dict[str, Any]]:
+    """Return existing Copilot-managed entries keyed by model name."""
+
+    existing: dict[str, dict[str, Any]] = {}
+    marker = f"{prefix}/"
+
+    for entry in models:
+        model_name = entry.get("model_name")
+        if not isinstance(model_name, str):
+            continue
+
+        aliases = coerce_aliases(entry.get("aliases"))
+        if any(alias.startswith(marker) for alias in aliases):
+            existing[model_name] = entry
+
+    return existing
+
+
 def save_registry(path: Path, data: dict[str, Any], dry_run: bool) -> None:
     formatted = json.dumps(data, indent=2, ensure_ascii=True) + "\n"
     if dry_run:
@@ -489,11 +542,16 @@ def main(argv: list[str] | None = None) -> int:
     registry = load_registry(output_path)
 
     readme_block = registry.get("_README") or DEFAULT_README
-    retained = retain_non_copilot_entries(registry.get("models", []), args.alias_prefix)
+    existing_models = registry.get("models", [])
+    retained = retain_non_copilot_entries(existing_models, args.alias_prefix)
+    existing_copilot_entries = existing_copilot_entries_by_model(existing_models, args.alias_prefix)
 
     used_aliases: set[str] = set()
     current_models = [model for model in models if is_current_chat_model(model)]
-    generated = [build_entry(args.alias_prefix, model, used_aliases) for model in current_models]
+    generated = [
+        build_entry(args.alias_prefix, model, used_aliases, existing_copilot_entries.get(model.model_id))
+        for model in current_models
+    ]
     generated.sort(
         key=lambda entry: (
             -entry.get("intelligence_score", 0),

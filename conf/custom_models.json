@@ -24,8 +24,13 @@
     {
       "model_name": "claude-opus-4.6",
       "friendly_name": "Claude Opus 4.6 (Copilot)",
-      "aliases": ["copilot/claude-opus-4.6", "copilot/claude-opus-4-6", "copilot/opus", "copilot/claude"],
-      "description": "Claude Opus 4.6 via GitHub Copilot proxy (vendor: Anthropic, synced 2026-04-13).",
+      "aliases": [
+        "copilot/claude-opus-4.6",
+        "copilot/claude-opus-4-6",
+        "copilot/opus",
+        "copilot/claude"
+      ],
+      "description": "Claude Opus 4.6 via GitHub Copilot proxy (vendor: Anthropic).",
       "context_window": 1000000,
       "max_output_tokens": 128000,
       "supports_extended_thinking": true,
@@ -40,10 +45,14 @@
     {
       "model_name": "gpt-5.4",
       "friendly_name": "GPT-5.4 (Copilot)",
-      "aliases": ["copilot/gpt-5.4", "copilot/gpt-5-4", "copilot/gpt"],
-      "description": "GPT-5.4 via GitHub Copilot proxy (vendor: OpenAI, synced 2026-04-13).",
-      "context_window": 1050000,
-      "max_output_tokens": 128000,
+      "aliases": [
+        "copilot/gpt-5.4",
+        "copilot/gpt-5-4",
+        "copilot/gpt"
+      ],
+      "description": "GPT-5.4 via GitHub Copilot proxy (vendor: OpenAI).",
+      "context_window": 500000,
+      "max_output_tokens": 150000,
       "supports_extended_thinking": true,
       "supports_function_calling": true,
       "supports_json_mode": true,
@@ -56,8 +65,13 @@
     {
       "model_name": "gemini-3.1-pro-preview",
       "friendly_name": "Gemini 3.1 Pro (Copilot)",
-      "aliases": ["copilot/gemini-3.1-pro-preview", "copilot/gemini-3-1-pro-preview", "copilot/gemini-3-1-pro", "copilot/gemini"],
-      "description": "Gemini 3.1 Pro via GitHub Copilot proxy (vendor: Google, synced 2026-04-13).",
+      "aliases": [
+        "copilot/gemini-3.1-pro-preview",
+        "copilot/gemini-3-1-pro-preview",
+        "copilot/gemini-3-1-pro",
+        "copilot/gemini"
+      ],
+      "description": "Gemini 3.1 Pro via GitHub Copilot proxy (vendor: Google).",
       "context_window": 1048576,
       "max_output_tokens": 65536,
       "supports_extended_thinking": true,
@@ -72,8 +86,12 @@
     {
       "model_name": "claude-sonnet-4.6",
       "friendly_name": "Claude Sonnet 4.6 (Copilot)",
-      "aliases": ["copilot/claude-sonnet-4.6", "copilot/claude-sonnet-4-6", "copilot/sonnet"],
-      "description": "Claude Sonnet 4.6 via GitHub Copilot proxy (vendor: Anthropic, synced 2026-04-13).",
+      "aliases": [
+        "copilot/claude-sonnet-4.6",
+        "copilot/claude-sonnet-4-6",
+        "copilot/sonnet"
+      ],
+      "description": "Claude Sonnet 4.6 via GitHub Copilot proxy (vendor: Anthropic).",
       "context_window": 1000000,
       "max_output_tokens": 64000,
       "supports_extended_thinking": true,
@@ -88,8 +106,12 @@
     {
       "model_name": "gpt-5.3-codex",
       "friendly_name": "GPT-5.3-Codex (Copilot)",
-      "aliases": ["copilot/gpt-5.3-codex", "copilot/gpt-5-3-codex", "copilot/codex"],
-      "description": "GPT-5.3-Codex via GitHub Copilot proxy (vendor: OpenAI, synced 2026-04-13).",
+      "aliases": [
+        "copilot/gpt-5.3-codex",
+        "copilot/gpt-5-3-codex",
+        "copilot/codex"
+      ],
+      "description": "GPT-5.3-Codex via GitHub Copilot proxy (vendor: OpenAI).",
       "context_window": 400000,
       "max_output_tokens": 128000,
       "supports_extended_thinking": true,
@@ -104,10 +126,14 @@
     {
       "model_name": "gpt-5.4-mini",
       "friendly_name": "GPT-5.4 mini (Copilot)",
-      "aliases": ["copilot/gpt-5.4-mini", "copilot/gpt-5-4-mini", "copilot/gpt-mini"],
-      "description": "GPT-5.4 mini via GitHub Copilot proxy (vendor: OpenAI, synced 2026-04-13).",
-      "context_window": 400000,
-      "max_output_tokens": 128000,
+      "aliases": [
+        "copilot/gpt-5.4-mini",
+        "copilot/gpt-5-4-mini",
+        "copilot/gpt-mini"
+      ],
+      "description": "GPT-5.4 mini via GitHub Copilot proxy (vendor: OpenAI).",
+      "context_window": 500000,
+      "max_output_tokens": 150000,
       "supports_extended_thinking": true,
       "supports_function_calling": true,
       "supports_json_mode": true,
@@ -118,26 +144,15 @@
       "allow_code_generation": true
     },
     {
-      "model_name": "gemini-3-flash-preview",
-      "friendly_name": "Gemini 3 Flash (Preview) (Copilot)",
-      "aliases": ["copilot/gemini-3-flash-preview", "copilot/gemini-flash"],
-      "description": "Gemini 3 Flash (Preview) via GitHub Copilot proxy (vendor: Google, synced 2026-04-13).",
-      "context_window": 1048576,
-      "max_output_tokens": 65536,
-      "supports_extended_thinking": true,
-      "supports_function_calling": true,
-      "supports_json_mode": true,
-      "supports_images": true,
-      "supports_temperature": true,
-      "max_image_size_mb": 40.0,
-      "intelligence_score": 17,
-      "allow_code_generation": true
-    },
-    {
       "model_name": "minimax-m2.5",
       "friendly_name": "MiniMax M2.5 (Fast) (Copilot)",
-      "aliases": ["copilot/minimax-m2.5", "copilot/minimax-m2-5", "copilot/minimax"],
-      "description": "MiniMax M2.5 (Fast) via GitHub Copilot proxy (vendor: Cerebras, synced 2026-04-13).",
+      "aliases": [
+        "copilot/minimax-m2.5",
+        "copilot/minimax-m2-5",
+        "copilot/minimax-m2-5-fast",
+        "copilot/minimax"
+      ],
+      "description": "MiniMax M2.5 (Fast) via GitHub Copilot proxy (vendor: Cerebras).",
       "context_window": 262144,
       "max_output_tokens": 65536,
       "supports_extended_thinking": false,
@@ -152,24 +167,31 @@
     {
       "model_name": "grok-code-fast-1",
       "friendly_name": "Grok Code Fast 1 (Copilot)",
-      "aliases": ["copilot/grok-code-fast-1", "copilot/grok-code"],
-      "description": "Grok Code Fast 1 via GitHub Copilot proxy (vendor: xAI, synced 2026-04-13).",
-      "context_window": 256000,
-      "max_output_tokens": 65536,
+      "aliases": [
+        "copilot/grok-code-fast-1",
+        "copilot/grok-code"
+      ],
+      "description": "Grok Code Fast 1 via GitHub Copilot proxy (vendor: xAI).",
+      "context_window": 2000000,
+      "max_output_tokens": 256000,
       "supports_extended_thinking": false,
       "supports_function_calling": true,
       "supports_json_mode": true,
-      "supports_images": false,
+      "supports_images": true,
       "supports_temperature": true,
-      "max_image_size_mb": 0.0,
+      "max_image_size_mb": 40.0,
       "intelligence_score": 15,
       "allow_code_generation": true
     },
     {
       "model_name": "claude-haiku-4.5",
       "friendly_name": "Claude Haiku 4.5 (Copilot)",
-      "aliases": ["copilot/claude-haiku-4.5", "copilot/claude-haiku-4-5", "copilot/haiku"],
-      "description": "Claude Haiku 4.5 via GitHub Copilot proxy (vendor: Anthropic, synced 2026-04-13).",
+      "aliases": [
+        "copilot/claude-haiku-4.5",
+        "copilot/claude-haiku-4-5",
+        "copilot/haiku"
+      ],
+      "description": "Claude Haiku 4.5 via GitHub Copilot proxy (vendor: Anthropic).",
       "context_window": 200000,
       "max_output_tokens": 64000,
       "supports_extended_thinking": true,
@@ -178,14 +200,35 @@
       "supports_images": true,
       "supports_temperature": true,
       "max_image_size_mb": 40.0,
-      "intelligence_score": 14,
+      "intelligence_score": 14
+    },
+    {
+      "model_name": "gemini-3-flash-preview",
+      "friendly_name": "Gemini 3 Flash (Preview) (Copilot)",
+      "aliases": [
+        "copilot/gemini-3-flash-preview",
+        "copilot/gemini-flash"
+      ],
+      "description": "Gemini 3 Flash (Preview) via GitHub Copilot proxy (vendor: Google).",
+      "context_window": 1048576,
+      "max_output_tokens": 65536,
+      "supports_extended_thinking": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": true,
+      "supports_temperature": true,
+      "max_image_size_mb": 40.0,
+      "intelligence_score": 13,
       "allow_code_generation": true
     },
     {
       "model_name": "goldeneye-free-auto",
       "friendly_name": "Goldeneye (Copilot)",
-      "aliases": ["copilot/goldeneye-free-auto", "copilot/goldeneye"],
-      "description": "Goldeneye via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2026-04-13).",
+      "aliases": [
+        "copilot/goldeneye-free-auto",
+        "copilot/goldeneye"
+      ],
+      "description": "Goldeneye via GitHub Copilot proxy (vendor: Azure OpenAI).",
       "context_window": 128000,
       "max_output_tokens": 65536,
       "supports_extended_thinking": false,
@@ -199,9 +242,14 @@
     },
     {
       "model_name": "oswe-vscode-prime",
-      "friendly_name": "Raptor mini (Prime) (Copilot)",
-      "aliases": ["copilot/oswe-vscode-prime", "copilot/raptor-prime", "copilot/raptor-mini"],
-      "description": "Raptor mini Prime via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2026-04-13).",
+      "friendly_name": "Raptor mini (Preview) (Copilot)",
+      "aliases": [
+        "copilot/oswe-vscode-prime",
+        "copilot/raptor-mini-preview",
+        "copilot/raptor-prime",
+        "copilot/raptor-mini"
+      ],
+      "description": "Raptor mini (Preview) via GitHub Copilot proxy (vendor: Azure OpenAI).",
       "context_window": 128000,
       "max_output_tokens": 65536,
       "supports_extended_thinking": false,
@@ -215,9 +263,12 @@
     },
     {
       "model_name": "oswe-vscode-secondary",
-      "friendly_name": "Raptor mini (Secondary) (Copilot)",
-      "aliases": ["copilot/oswe-vscode-secondary", "copilot/raptor-secondary"],
-      "description": "Raptor mini Secondary via GitHub Copilot proxy (vendor: Azure OpenAI, synced 2026-04-13).",
+      "friendly_name": "Raptor mini (Preview) (Copilot)",
+      "aliases": [
+        "copilot/oswe-vscode-secondary",
+        "copilot/raptor-secondary"
+      ],
+      "description": "Raptor mini (Preview) via GitHub Copilot proxy (vendor: Azure OpenAI).",
       "context_window": 128000,
       "max_output_tokens": 65536,
       "supports_extended_thinking": false,
@@ -230,10 +281,13 @@
       "allow_code_generation": true
     },
     {
-      "model_name": "accounts/msft/routers/mp3yn0h7",
-      "friendly_name": "MiniMax M2.5 (Copilot Router)",
-      "aliases": ["copilot/accounts-msft-routers-mp3yn0h7", "copilot/minimax-m2.5-copilot"],
-      "description": "MiniMax M2.5 Copilot router via GitHub Copilot proxy (vendor: Fireworks, synced 2026-04-13).",
+      "model_name": "accounts/msft/routers/yaqq2gxh",
+      "friendly_name": "MiniMax M2.5 (Copilot)",
+      "aliases": [
+        "copilot/accounts/msft/routers/yaqq2gxh",
+        "copilot/accounts-msft-routers-yaqq2gxh"
+      ],
+      "description": "MiniMax M2.5 via GitHub Copilot proxy (vendor: Fireworks).",
       "context_window": 262144,
       "max_output_tokens": 65536,
       "supports_extended_thinking": false,
@@ -242,14 +296,17 @@
       "supports_images": false,
       "supports_temperature": true,
       "max_image_size_mb": 0.0,
-      "intelligence_score": 16,
-      "allow_code_generation": true
+      "intelligence_score": 10
     },
     {
-      "model_name": "accounts/msft/routers/yaqq2gxh",
-      "friendly_name": "MiniMax M2.5 (Copilot Router)",
-      "aliases": ["copilot/accounts-msft-routers-yaqq2gxh", "copilot/minimax-m2.5-router"],
-      "description": "MiniMax M2.5 router via GitHub Copilot proxy (vendor: Fireworks, synced 2026-04-13).",
+      "model_name": "accounts/msft/routers/mp3yn0h7",
+      "friendly_name": "MiniMax M2.5 (Copilot) (Copilot)",
+      "aliases": [
+        "copilot/accounts/msft/routers/mp3yn0h7",
+        "copilot/accounts-msft-routers-mp3yn0h7",
+        "copilot/minimax-m2-5-copilot"
+      ],
+      "description": "MiniMax M2.5 (Copilot) via GitHub Copilot proxy (vendor: Fireworks).",
       "context_window": 262144,
       "max_output_tokens": 65536,
       "supports_extended_thinking": false,
@@ -258,16 +315,19 @@
       "supports_images": false,
       "supports_temperature": true,
       "max_image_size_mb": 0.0,
-      "intelligence_score": 16,
-      "allow_code_generation": true
+      "intelligence_score": 10
     },
     {
       "model_name": "accounts/msft/routers/f185i3v4",
       "friendly_name": "Search Agent A (Copilot)",
-      "aliases": ["copilot/accounts-msft-routers-f185i3v4", "copilot/search-agent-a"],
-      "description": "Search Agent A via GitHub Copilot proxy (vendor: Fireworks, synced 2026-04-13).",
-      "context_window": 128000,
-      "max_output_tokens": 32768,
+      "aliases": [
+        "copilot/accounts/msft/routers/f185i3v4",
+        "copilot/accounts-msft-routers-f185i3v4",
+        "copilot/search-agent-a"
+      ],
+      "description": "Search Agent A via GitHub Copilot proxy (vendor: Fireworks).",
+      "context_window": 262144,
+      "max_output_tokens": 65536,
       "supports_extended_thinking": false,
       "supports_function_calling": true,
       "supports_json_mode": true,
@@ -279,10 +339,14 @@
     {
       "model_name": "accounts/msft/routers/fmfeto88",
       "friendly_name": "Search Agent B (Copilot)",
-      "aliases": ["copilot/accounts-msft-routers-fmfeto88", "copilot/search-agent-b"],
-      "description": "Search Agent B via GitHub Copilot proxy (vendor: Fireworks, synced 2026-04-13).",
-      "context_window": 128000,
-      "max_output_tokens": 32768,
+      "aliases": [
+        "copilot/accounts/msft/routers/fmfeto88",
+        "copilot/accounts-msft-routers-fmfeto88",
+        "copilot/search-agent-b"
+      ],
+      "description": "Search Agent B via GitHub Copilot proxy (vendor: Fireworks).",
+      "context_window": 262144,
+      "max_output_tokens": 65536,
       "supports_extended_thinking": false,
       "supports_function_calling": true,
       "supports_json_mode": true,
@@ -294,10 +358,14 @@
     {
       "model_name": "accounts/msft/routers/gdjv4v2v",
       "friendly_name": "Search Agent C (Copilot)",
-      "aliases": ["copilot/accounts-msft-routers-gdjv4v2v", "copilot/search-agent-c"],
-      "description": "Search Agent C via GitHub Copilot proxy (vendor: Fireworks, synced 2026-04-13).",
-      "context_window": 128000,
-      "max_output_tokens": 32768,
+      "aliases": [
+        "copilot/accounts/msft/routers/gdjv4v2v",
+        "copilot/accounts-msft-routers-gdjv4v2v",
+        "copilot/search-agent-c"
+      ],
+      "description": "Search Agent C via GitHub Copilot proxy (vendor: Fireworks).",
+      "context_window": 262144,
+      "max_output_tokens": 65536,
       "supports_extended_thinking": false,
       "supports_function_calling": true,
       "supports_json_mode": true,

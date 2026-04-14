@@ -21,6 +21,7 @@ All snippets below assume you cloned Zen into `~/mcp-servers-official/zen-mcp-se
       "env": {
         "CUSTOM_API_URL": "http://localhost:4141/v1",
         "CUSTOM_API_KEY": "copilot-proxy",
+        "COPILOT_REUSE_EXISTING": "1",
         "CUSTOM_ALLOWED_MODELS": "copilot/claude-opus-4.6,copilot/claude-sonnet-4.6,copilot/claude-haiku-4.5,copilot/gemini-3.1-pro-preview,copilot/gemini-3-flash-preview,copilot/gpt-5.4,copilot/gpt-5.4-mini,copilot/gpt-5.3-codex,copilot/grok-code-fast-1,copilot/minimax-m2.5,copilot/goldeneye-free-auto,copilot/oswe-vscode-prime,copilot/oswe-vscode-secondary,copilot/search-agent-a,copilot/search-agent-b,copilot/search-agent-c",
         "DEFAULT_MODEL": "auto",
         "LOG_LEVEL": "INFO"
@@ -44,6 +45,7 @@ All snippets below assume you cloned Zen into `~/mcp-servers-official/zen-mcp-se
       "env": {
         "CUSTOM_API_URL": "http://localhost:4141/v1",
         "CUSTOM_API_KEY": "copilot-proxy",
+        "COPILOT_REUSE_EXISTING": "1",
         "CUSTOM_ALLOWED_MODELS": "copilot/claude-opus-4.6,copilot/claude-sonnet-4.6,copilot/claude-haiku-4.5,copilot/gemini-3.1-pro-preview,copilot/gemini-3-flash-preview,copilot/gpt-5.4,copilot/gpt-5.4-mini,copilot/gpt-5.3-codex,copilot/grok-code-fast-1,copilot/minimax-m2.5,copilot/goldeneye-free-auto,copilot/oswe-vscode-prime,copilot/oswe-vscode-secondary,copilot/search-agent-a,copilot/search-agent-b,copilot/search-agent-c",
         "DEFAULT_MODEL": "auto",
         "LOG_LEVEL": "INFO"
@@ -67,6 +69,7 @@ All snippets below assume you cloned Zen into `~/mcp-servers-official/zen-mcp-se
       "env": {
         "CUSTOM_API_URL": "http://localhost:4141/v1",
         "CUSTOM_API_KEY": "copilot-proxy",
+        "COPILOT_REUSE_EXISTING": "1",
         "CUSTOM_ALLOWED_MODELS": "copilot/claude-opus-4.6,copilot/claude-sonnet-4.6,copilot/claude-haiku-4.5,copilot/gemini-3.1-pro-preview,copilot/gemini-3-flash-preview,copilot/gpt-5.4,copilot/gpt-5.4-mini,copilot/gpt-5.3-codex,copilot/grok-code-fast-1,copilot/minimax-m2.5,copilot/goldeneye-free-auto,copilot/oswe-vscode-prime,copilot/oswe-vscode-secondary,copilot/search-agent-a,copilot/search-agent-b,copilot/search-agent-c",
         "DEFAULT_MODEL": "auto",
         "LOG_LEVEL": "INFO"
@@ -95,6 +98,7 @@ All snippets below assume you cloned Zen into `~/mcp-servers-official/zen-mcp-se
         "DEFAULT_MODEL": "auto",
         "CUSTOM_API_URL": "http://localhost:4141/v1",
         "CUSTOM_API_KEY": "copilot-proxy",
+        "COPILOT_REUSE_EXISTING": "1",
         "LOG_LEVEL": "INFO"
       }
     }
