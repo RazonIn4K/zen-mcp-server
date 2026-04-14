@@ -476,6 +476,7 @@ class BaseTool(ABC):
             "XAI_ALLOWED_MODELS": "X.AI",
             "OPENROUTER_ALLOWED_MODELS": "OpenRouter",
             "DIAL_ALLOWED_MODELS": "DIAL",
+            "CUSTOM_ALLOWED_MODELS": "Custom/Local",
         }
 
         notes: list[str] = []
@@ -907,7 +908,6 @@ class BaseTool(ABC):
         updated_files = []
 
         for file_path in files:
-
             # Check if the filename is exactly "prompt.txt"
             # This ensures we don't match files like "myprompt.txt" or "prompt.txt.bak"
             if os.path.basename(file_path) == "prompt.txt":
@@ -1507,8 +1507,8 @@ When recommending searches, be specific about what information you need and why 
                 "status": "error",
                 "content": (
                     f"Image support not available: Model '{model_name}' does not support image processing. "
-                    f"Please use a vision-capable model such as 'gemini-2.5-flash', 'o3', "
-                    f"or 'claude-opus-4.1' for image analysis tasks."
+                    f"Please use a vision-capable model such as 'gemini-3.1-pro-preview', 'gpt-5.4', "
+                    f"or 'claude-sonnet-4.6' for image analysis tasks."
                 ),
                 "content_type": "text",
                 "metadata": {

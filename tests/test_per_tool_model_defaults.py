@@ -76,9 +76,18 @@ class TestToolModelCategories:
 class TestModelSelection:
     """Test model selection based on tool categories."""
 
+    def setup_method(self):
+        """Reset cached restrictions before each selection test."""
+        import utils.model_restrictions
+
+        utils.model_restrictions._restriction_service = None
+
     def teardown_method(self):
         """Clean up after each test to prevent state pollution."""
         ModelProviderRegistry.clear_cache()
+        import utils.model_restrictions
+
+        utils.model_restrictions._restriction_service = None
         # Unregister all providers
         for provider_type in list(ProviderType):
             ModelProviderRegistry.unregister_provider(provider_type)
@@ -97,8 +106,8 @@ class TestModelSelection:
             ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
 
             model = ModelProviderRegistry.get_preferred_fallback_model(ToolModelCategory.EXTENDED_REASONING)
-            # OpenAI prefers GPT-5-Codex for extended reasoning (coding tasks)
-            assert model == "gpt-5-codex"
+            # OpenAI prefers GPT-5.4 Pro for extended reasoning
+            assert model == "gpt-5.4-pro"
 
     def test_extended_reasoning_with_gemini_only(self):
         """Test EXTENDED_REASONING prefers pro when only Gemini is available."""
@@ -108,15 +117,13 @@ class TestModelSelection:
             ModelProviderRegistry.unregister_provider(provider_type)
 
         # Register only Gemini provider
-        with patch.dict(os.environ, {"GOOGLE_API_KEY": "test-key"}, clear=False):
+        with patch.dict(os.environ, {"GEMINI_API_KEY": "test-key"}, clear=False):
             from providers.gemini import GeminiModelProvider
 
             ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
 
             model = ModelProviderRegistry.get_preferred_fallback_model(ToolModelCategory.EXTENDED_REASONING)
-            # Gemini should return one of its models for extended reasoning
-            # The default behavior may return flash when pro is not explicitly preferred
-            assert model in ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.0-flash"]
+            assert model == "gemini-3.1-pro-preview"
 
     def test_fast_response_with_openai(self):
         """Test FAST_RESPONSE with OpenAI provider."""
@@ -132,8 +139,8 @@ class TestModelSelection:
             ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
 
             model = ModelProviderRegistry.get_preferred_fallback_model(ToolModelCategory.FAST_RESPONSE)
-            # OpenAI now prefers gpt-5 for fast response (based on our new preference order)
-            assert model == "gpt-5"
+            # OpenAI prefers GPT-5.4 mini for fast response
+            assert model == "gpt-5.4-mini"
 
     def test_fast_response_with_gemini_only(self):
         """Test FAST_RESPONSE prefers flash when only Gemini is available."""
@@ -143,14 +150,13 @@ class TestModelSelection:
             ModelProviderRegistry.unregister_provider(provider_type)
 
         # Register only Gemini provider
-        with patch.dict(os.environ, {"GOOGLE_API_KEY": "test-key"}, clear=False):
+        with patch.dict(os.environ, {"GEMINI_API_KEY": "test-key"}, clear=False):
             from providers.gemini import GeminiModelProvider
 
             ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
 
             model = ModelProviderRegistry.get_preferred_fallback_model(ToolModelCategory.FAST_RESPONSE)
-            # Gemini should return one of its models for fast response
-            assert model in ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-pro"]
+            assert model == "gemini-3.1-flash-lite-preview"
 
     def test_balanced_category_fallback(self):
         """Test BALANCED category uses existing logic."""
@@ -166,8 +172,8 @@ class TestModelSelection:
             ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
 
             model = ModelProviderRegistry.get_preferred_fallback_model(ToolModelCategory.BALANCED)
-            # OpenAI prefers gpt-5 for balanced (based on our new preference order)
-            assert model == "gpt-5"
+            # OpenAI prefers GPT-5.4 for balanced use
+            assert model == "gpt-5.4"
 
     def test_no_category_uses_balanced_logic(self):
         """Test that no category specified uses balanced logic."""
@@ -179,7 +185,7 @@ class TestModelSelection:
 
             model = ModelProviderRegistry.get_preferred_fallback_model()
             # Should pick flash for balanced use
-            assert model == "gemini-2.5-flash"
+            assert model == "gemini-3.1-flash-lite-preview"
 
 
 class TestFlexibleModelSelection:
@@ -194,21 +200,21 @@ class TestFlexibleModelSelection:
                 "env": {"OPENAI_API_KEY": "test-key"},
                 "provider_type": ProviderType.OPENAI,
                 "category": ToolModelCategory.EXTENDED_REASONING,
-                "expected": "gpt-5-codex",  # GPT-5-Codex prioritized for coding tasks
+                "expected": "gpt-5.4-pro",
             },
             # Case 2: Gemini provider for fast response
             {
                 "env": {"GEMINI_API_KEY": "test-key"},
                 "provider_type": ProviderType.GOOGLE,
                 "category": ToolModelCategory.FAST_RESPONSE,
-                "expected": "gemini-2.5-flash",
+                "expected": "gemini-3.1-flash-lite-preview",
             },
             # Case 3: OpenAI provider for fast response
             {
                 "env": {"OPENAI_API_KEY": "test-key"},
                 "provider_type": ProviderType.OPENAI,
                 "category": ToolModelCategory.FAST_RESPONSE,
-                "expected": "gpt-5",  # Based on new preference order
+                "expected": "gpt-5.4-mini",
             },
         ]
 
@@ -263,7 +269,7 @@ class TestCustomProviderFallback:
 
         model = ModelProviderRegistry.get_preferred_fallback_model(ToolModelCategory.EXTENDED_REASONING)
         # Should fall back to hardcoded default
-        assert model == "gemini-2.5-flash"
+        assert model == "gemini-3.1-flash-lite-preview"
 
 
 class TestAutoModeErrorMessages:
@@ -282,9 +288,8 @@ class TestAutoModeErrorMessages:
                 with patch.object(ModelProviderRegistry, "get_available_models") as mock_get_available:
                     # Mock OpenAI models available
                     mock_get_available.return_value = {
-                        "o3": ProviderType.OPENAI,
-                        "o3-mini": ProviderType.OPENAI,
-                        "o4-mini": ProviderType.OPENAI,
+                        "gpt-5.4": ProviderType.OPENAI,
+                        "gpt-5.4-pro": ProviderType.OPENAI,
                     }
 
                     # Mock the provider lookup to return None for auto model
@@ -353,7 +358,7 @@ class TestProviderHelperMethods:
 
         # Should return hardcoded fallback
         model = ModelProviderRegistry.get_preferred_fallback_model(ToolModelCategory.EXTENDED_REASONING)
-        assert model == "gemini-2.5-flash"
+        assert model == "gemini-3.1-flash-lite-preview"
 
 
 class TestEffectiveAutoMode:
@@ -368,7 +373,7 @@ class TestEffectiveAutoMode:
 
     def test_unavailable_model_triggers_auto_mode(self):
         """Test when DEFAULT_MODEL is set but not available."""
-        with patch("config.DEFAULT_MODEL", "o3"):
+        with patch("config.DEFAULT_MODEL", "nonexistent-model"):
             with patch("config.IS_AUTO_MODE", False):
                 with patch.object(ModelProviderRegistry, "get_provider_for_model") as mock_get_provider:
                     mock_get_provider.return_value = None  # Model not available
@@ -429,7 +434,7 @@ class TestRuntimeModelSelection:
                     temp_dir = tempfile.mkdtemp()
                     try:
                         result = await tool.execute(
-                            {"prompt": "test", "model": "gpt-5-turbo", "working_directory": temp_dir}
+                            {"prompt": "test", "model": "nonexistent-model", "working_directory": temp_dir}
                         )
                     finally:
                         shutil.rmtree(temp_dir, ignore_errors=True)
@@ -439,7 +444,7 @@ class TestRuntimeModelSelection:
                     # When a specific model is requested but not available, error message is different
                     error_output = json.loads(result[0].text)
                     assert error_output["status"] == "error"
-                    assert "gpt-5-turbo" in error_output["content"]
+                    assert "nonexistent-model" in error_output["content"]
                     assert "is not available" in error_output["content"]
 
 
@@ -458,7 +463,7 @@ class TestSchemaGeneration:
 
     def test_schema_with_unavailable_default_model(self):
         """Test schema when DEFAULT_MODEL is set but unavailable."""
-        with patch("config.DEFAULT_MODEL", "o3"):
+        with patch("config.DEFAULT_MODEL", "nonexistent-model"):
             with patch("config.IS_AUTO_MODE", False):
                 with patch.object(ModelProviderRegistry, "get_provider_for_model") as mock_get_provider:
                     mock_get_provider.return_value = None  # Model not available
@@ -489,10 +494,10 @@ class TestUnavailableModelFallback:
     @pytest.mark.asyncio
     async def test_unavailable_default_model_fallback(self):
         """Test that unavailable DEFAULT_MODEL triggers auto mode behavior."""
-        with patch("config.DEFAULT_MODEL", "o3"):  # Set DEFAULT_MODEL to a specific model
+        with patch("config.DEFAULT_MODEL", "nonexistent-model"):  # Set DEFAULT_MODEL to a specific model
             with patch("config.IS_AUTO_MODE", False):  # Not in auto mode
                 with patch.object(ModelProviderRegistry, "get_provider_for_model") as mock_get_provider:
-                    # Model is not available (no provider)
+                    # Model is not available
                     mock_get_provider.return_value = None
 
                     tool = ThinkDeepTool()

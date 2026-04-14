@@ -52,7 +52,7 @@ OPENROUTER_API_KEY=your_openrouter_api_key_here
 # For Ollama, vLLM, LM Studio, etc.
 CUSTOM_API_URL=http://localhost:11434/v1  # Ollama example
 CUSTOM_API_KEY=                                      # Empty for Ollama
-CUSTOM_MODEL_NAME=llama3.2                          # Default model
+CUSTOM_MODEL_NAME=<model-name>                      # Default model
 ```
 
 **Local Model Connection:**
@@ -63,7 +63,7 @@ CUSTOM_MODEL_NAME=llama3.2                          # Default model
 
 **Default Model Selection:**
 ```env
-# Options: 'auto', 'pro', 'flash', 'o3', 'o3-mini', 'o4-mini', etc.
+# Options: 'auto', 'gpt', 'gpt54', 'gpt54mini', 'pro', 'flash', 'grok', etc.
 DEFAULT_MODEL=auto  # Claude picks best model for each task (recommended)
 ```
 
@@ -81,11 +81,11 @@ DEFAULT_MODEL=auto  # Claude picks best model for each task (recommended)
 
   | Provider | Canonical Models | Notable Aliases |
   |----------|-----------------|-----------------|
-  | OpenAI | `gpt-5`, `gpt-5-pro`, `gpt-5-mini`, `gpt-5-nano`, `gpt-5-codex`, `gpt-4.1`, `o3`, `o3-mini`, `o3-pro`, `o4-mini` | `gpt5`, `gpt5pro`, `mini`, `nano`, `codex`, `o3mini`, `o3pro`, `o4mini` |
-  | Gemini | `gemini-2.5-pro`, `gemini-2.5-flash`, `gemini-2.0-flash`, `gemini-2.0-flash-lite` | `pro`, `gemini-pro`, `flash`, `flash-2.0`, `flashlite` |
-  | X.AI | `grok-4`, `grok-3`, `grok-3-fast` | `grok`, `grok4`, `grok3`, `grok3fast`, `grokfast` |
+  | OpenAI | `gpt-5.4-pro`, `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.4-nano`, `gpt-5.3-codex` | `gpt`, `gpt54`, `gpt54mini`, `nano`, `codex` |
+  | Gemini | `gemini-3.1-pro-preview`, `gemini-3.1-flash-lite-preview`, `gemini-2.5-pro`, `gemini-2.5-flash`, `gemini-2.5-flash-lite` | `pro`, `gemini-pro`, `flashlite`, `flash`, `pro2.5` |
+  | X.AI | `grok-4.20-reasoning`, `grok-code-fast-1` | `grok`, `grok4`, `grok-fast`, `grokcode` |
   | OpenRouter | See `conf/openrouter_models.json` for the continually evolving catalogue | e.g., `opus`, `sonnet`, `flash`, `pro`, `mistral` |
-  | Custom | User-managed entries such as `llama3.2` | Define your own aliases per entry |
+  | Custom | User-managed entries such as Copilot proxy IDs or local model names | Define your own aliases per entry |
 
   > **Tip:** Copy the JSON file you need, customise it, and point the corresponding `*_MODELS_CONFIG_PATH` environment variable to your version. This lets you enable or disable capabilities (JSON mode, function calling, temperature support, code generation) without editing Python.
 
@@ -169,37 +169,40 @@ Control which models can be used from each provider for cost control, compliance
 # Empty or unset = all models allowed (default)
 
 # OpenAI model restrictions
-OPENAI_ALLOWED_MODELS=o3-mini,o4-mini,mini
+OPENAI_ALLOWED_MODELS=gpt,gpt-5.4,gpt-5.4-mini
 
 # Gemini model restrictions  
-GOOGLE_ALLOWED_MODELS=flash,pro
+GOOGLE_ALLOWED_MODELS=flash,pro,flashlite
 
 # X.AI GROK model restrictions
-XAI_ALLOWED_MODELS=grok-3,grok-3-fast,grok-4
+XAI_ALLOWED_MODELS=grok,grok-code
 
 # OpenRouter model restrictions (affects models via custom provider)
 OPENROUTER_ALLOWED_MODELS=opus,sonnet,mistral
+
+# Custom/Local model restrictions (Copilot proxy or other OpenAI-compatible endpoints)
+CUSTOM_ALLOWED_MODELS=copilot/claude-opus-4.6,copilot/gpt-5.4
 ```
 
 **Supported Model Names:** The names/aliases listed in the JSON manifests above are the authoritative source. Keep in mind:
 
-- Aliases are case-insensitive and defined per entry (for example, `mini` maps to `gpt-5-mini` by default, while `flash` maps to `gemini-2.5-flash`).
+- Aliases are case-insensitive and defined per entry (for example, `mini` maps to `gpt-5.4-mini` by default, while `flashlite` maps to `gemini-3.1-flash-lite-preview`).
 - When you override the manifest files you can add or remove aliases as needed; restriction policies (`*_ALLOWED_MODELS`) automatically pick up those changes.
 - Models omitted from a manifest fall back to generic capability detection (where supported) and may have limited feature metadata.
 
 **Example Configurations:**
 ```env
 # Cost control - only cheap models
-OPENAI_ALLOWED_MODELS=o4-mini
+OPENAI_ALLOWED_MODELS=gpt-5.4-mini
 GOOGLE_ALLOWED_MODELS=flash
 
 # Single model standardization
-OPENAI_ALLOWED_MODELS=o4-mini
+OPENAI_ALLOWED_MODELS=gpt-5.4
 GOOGLE_ALLOWED_MODELS=pro
 
 # Balanced selection
 GOOGLE_ALLOWED_MODELS=flash,pro
-XAI_ALLOWED_MODELS=grok,grok-3-fast
+XAI_ALLOWED_MODELS=grok,grok-code
 ```
 
 ### Advanced Configuration
@@ -252,7 +255,7 @@ DEFAULT_MODEL=auto
 GEMINI_API_KEY=your-gemini-key
 OPENAI_API_KEY=your-openai-key
 GOOGLE_ALLOWED_MODELS=flash
-OPENAI_ALLOWED_MODELS=o4-mini
+OPENAI_ALLOWED_MODELS=gpt-5.4-mini
 LOG_LEVEL=INFO
 CONVERSATION_TIMEOUT_HOURS=3
 ```
@@ -260,10 +263,10 @@ CONVERSATION_TIMEOUT_HOURS=3
 ### Local Development
 ```env
 # Local models only
-DEFAULT_MODEL=llama3.2
+DEFAULT_MODEL=<model-name>
 CUSTOM_API_URL=http://localhost:11434/v1
 CUSTOM_API_KEY=
-CUSTOM_MODEL_NAME=llama3.2
+CUSTOM_MODEL_NAME=<model-name>
 LOG_LEVEL=DEBUG
 ```
 

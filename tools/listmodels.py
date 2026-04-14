@@ -325,19 +325,28 @@ class ListModelsTool(BaseTool):
             try:
                 registry = CustomEndpointModelRegistry()
                 custom_models = []
+                provider = ModelProviderRegistry.get_provider(ProviderType.CUSTOM)
 
                 for alias in registry.list_aliases():
+                    if provider:
+                        try:
+                            provider.get_capabilities(alias)
+                        except ValueError:
+                            continue
                     config = registry.resolve(alias)
                     if config:
                         custom_models.append((alias, config))
 
                 if custom_models:
                     output_lines.append("\n**Custom Models**:")
-                    for alias, config in custom_models:
+                    for alias, config in sorted(custom_models, key=lambda item: item[0]):
                         context_str = f"{config.context_window // 1000}K" if config.context_window else "?"
                         output_lines.append(f"- `{alias}` → `{config.model_name}` ({context_str} context)")
                         if config.description:
                             output_lines.append(f"  - {config.description}")
+                elif provider and getattr(provider, "allowed_models", None):
+                    output_lines.append("\n**Custom Models**:")
+                    output_lines.append("*No custom models are currently allowed by CUSTOM_ALLOWED_MODELS.*")
 
             except Exception as e:
                 output_lines.append(f"**Error loading custom models**: {str(e)}")

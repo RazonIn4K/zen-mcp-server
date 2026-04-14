@@ -116,7 +116,7 @@ Test isolated components and functions:
 - **Auto mode**: Model selection logic and fallback behavior
 
 ### HTTP Recording/Replay Tests (HTTP Transport Recorder)
-Tests for expensive API calls (like o3-pro) use custom recording/replay:
+Tests for expensive API calls (like gpt-5.4-pro) use custom recording/replay:
 - **Real API validation**: Tests against actual provider responses
 - **Cost efficiency**: Record once, replay forever
 - **Provider compatibility**: Validates fixes against real APIs

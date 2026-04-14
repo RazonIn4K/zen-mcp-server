@@ -56,7 +56,7 @@ class TestO3ProOutputTextFix:
         ModelProviderRegistry.reset_for_testing()
 
     @pytest.mark.no_mock_provider  # Disable provider mocking for this test
-    @patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "o3-pro", "LOCALE": ""})
+    @patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "gpt-5.4-pro", "LOCALE": ""})
     async def test_o3_pro_uses_output_text_field(self, monkeypatch):
         """Test that o3-pro parsing uses the output_text convenience field via ChatTool."""
         cassette_path = cassette_dir / "o3_pro_basic_math.json"
@@ -96,7 +96,7 @@ class TestO3ProOutputTextFix:
         with tempfile.TemporaryDirectory() as workdir:
             arguments = {
                 "prompt": "What is 2 + 2?",
-                "model": "o3-pro",
+                "model": "gpt-5.4-pro",
                 "temperature": 1.0,
                 "working_directory": workdir,
             }
@@ -127,5 +127,5 @@ class TestO3ProOutputTextFix:
 
         # Verify o3-pro was actually used
         metadata = response_data["metadata"]
-        assert metadata["model_used"] == "o3-pro"
+        assert metadata["model_used"] == "gpt-5.4-pro"
         assert metadata["provider_used"] == "openai"

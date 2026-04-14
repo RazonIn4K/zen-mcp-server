@@ -88,12 +88,12 @@ class TestOpenRouterModelRegistry:
 
         # Test various aliases
         test_cases = [
-            ("opus", "anthropic/claude-opus-4.1"),
-            ("OPUS", "anthropic/claude-opus-4.1"),  # Case insensitive
-            ("sonnet", "anthropic/claude-sonnet-4.5"),
-            ("o3", "openai/o3"),
-            ("deepseek", "deepseek/deepseek-r1-0528"),
-            ("mistral", "mistralai/mistral-large-2411"),
+            ("opus", "anthropic/claude-opus-4.6"),
+            ("OPUS", "anthropic/claude-opus-4.6"),  # Case insensitive
+            ("sonnet", "anthropic/claude-sonnet-4.6"),
+            ("gpt", "openai/gpt-5.4-pro"),
+            ("deepseek", "deepseek/deepseek-r1"),
+            ("mistral", "mistralai/mistral-large"),
         ]
 
         for alias, expected_model in test_cases:
@@ -106,13 +106,13 @@ class TestOpenRouterModelRegistry:
         registry = OpenRouterModelRegistry()
 
         # Should be able to look up by full model name
-        config = registry.resolve("anthropic/claude-opus-4.1")
+        config = registry.resolve("anthropic/claude-opus-4.6")
         assert config is not None
-        assert config.model_name == "anthropic/claude-opus-4.1"
+        assert config.model_name == "anthropic/claude-opus-4.6"
 
-        config = registry.resolve("openai/o3")
+        config = registry.resolve("openai/gpt-5.4-pro")
         assert config is not None
-        assert config.model_name == "openai/o3"
+        assert config.model_name == "openai/gpt-5.4-pro"
 
     def test_unknown_model_resolution(self):
         """Test resolution of unknown models."""
@@ -132,10 +132,10 @@ class TestOpenRouterModelRegistry:
 
         # Registry now returns ModelCapabilities objects directly
         assert config.provider == ProviderType.OPENROUTER
-        assert config.model_name == "anthropic/claude-opus-4.1"
-        assert config.friendly_name == "OpenRouter (anthropic/claude-opus-4.1)"
-        assert config.context_window == 200000
-        assert not config.supports_extended_thinking
+        assert config.model_name == "anthropic/claude-opus-4.6"
+        assert config.friendly_name == "OpenRouter (anthropic/claude-opus-4.6)"
+        assert config.context_window == 1000000
+        assert config.supports_extended_thinking
 
     def test_duplicate_alias_detection(self):
         """Test that duplicate aliases are detected."""

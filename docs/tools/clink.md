@@ -38,7 +38,7 @@ The subagent:
 **Scenario 2**: Use [`consensus`](consensus.md) to debate features with multiple models, then hand off to Gemini for implementation.
 
 ```
-"Use consensus with pro and gpt5 to decide whether to add dark mode or offline support next"
+"Use consensus with pro and gpt54 to decide whether to add dark mode or offline support next"
 [consensus runs, models deliberate, recommendation emerges]
 
 Use continuation with clink - implement the recommended feature

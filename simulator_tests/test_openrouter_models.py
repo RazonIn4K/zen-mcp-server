@@ -3,12 +3,11 @@
 OpenRouter Model Tests
 
 Tests that verify OpenRouter functionality including:
-- Model alias resolution (flash, pro, o3, etc. map to OpenRouter equivalents)
+- Model alias resolution (flash, pro, gpt, etc. map to OpenRouter equivalents)
 - Multiple OpenRouter models work correctly
 - Conversation continuity works with OpenRouter models
 - Error handling when models are not available
 """
-
 
 from .base_test import BaseSimulatorTest
 
@@ -63,7 +62,7 @@ class OpenRouterModelsTest(BaseSimulatorTest):
                 self.logger.info(f"  ✅ Got continuation_id: {continuation_id}")
 
             # Test 2: Pro alias mapping to OpenRouter
-            self.logger.info("  2: Testing 'pro' alias (should map to google/gemini-2.5-pro)")
+            self.logger.info("  2: Testing 'pro' alias (should map to google/gemini-3.1-pro-preview)")
 
             response2, _ = self.call_mcp_tool(
                 "chat",
@@ -80,32 +79,32 @@ class OpenRouterModelsTest(BaseSimulatorTest):
 
             self.logger.info("  ✅ Pro alias call completed")
 
-            # Test 3: O3 alias mapping to OpenRouter (should map to openai/gpt-4o)
-            self.logger.info("  3: Testing 'o3' alias (should map to openai/gpt-4o)")
+            # Test 3: GPT alias mapping to OpenRouter (should map to openai/gpt-5.4-pro)
+            self.logger.info("  3: Testing 'gpt' alias (should map to openai/gpt-5.4-pro)")
 
             response3, _ = self.call_mcp_tool(
                 "chat",
                 {
-                    "prompt": "Say 'Hello from O3 model!' and nothing else.",
-                    "model": "o3",
+                    "prompt": "Say 'Hello from GPT model!' and nothing else.",
+                    "model": "gpt",
                     "temperature": 0.1,
                 },
             )
 
             if not response3:
-                self.logger.error("  ❌ O3 alias test failed")
+                self.logger.error("  ❌ GPT alias test failed")
                 return False
 
-            self.logger.info("  ✅ O3 alias call completed")
+            self.logger.info("  ✅ GPT alias call completed")
 
             # Test 4: Direct OpenRouter model name
-            self.logger.info("  4: Testing direct OpenRouter model name (anthropic/claude-3-haiku)")
+            self.logger.info("  4: Testing direct OpenRouter model name (anthropic/claude-haiku-4.5)")
 
             response4, _ = self.call_mcp_tool(
                 "chat",
                 {
                     "prompt": "Say 'Hello from Claude Haiku!' and nothing else.",
-                    "model": "anthropic/claude-3-haiku",
+                    "model": "anthropic/claude-haiku-4.5",
                     "temperature": 0.1,
                 },
             )
@@ -117,7 +116,7 @@ class OpenRouterModelsTest(BaseSimulatorTest):
             self.logger.info("  ✅ Direct OpenRouter model call completed")
 
             # Test 5: OpenRouter alias from config
-            self.logger.info("  5: Testing OpenRouter alias from config ('opus' -> anthropic/claude-opus-4)")
+            self.logger.info("  5: Testing OpenRouter alias from config ('opus' -> anthropic/claude-opus-4.6)")
 
             response5, _ = self.call_mcp_tool(
                 "chat",
@@ -183,15 +182,15 @@ class OpenRouterModelsTest(BaseSimulatorTest):
             flash_mapping_logs = [
                 line
                 for line in logs.split("\n")
-                if ("flash" in line and "google/gemini-flash" in line)
-                or ("Resolved model" in line and "google/gemini-flash" in line)
+                if ("flash" in line and "google/gemini-2.5-flash" in line)
+                or ("Resolved model" in line and "google/gemini-2.5-flash" in line)
             ]
 
             pro_mapping_logs = [
                 line
                 for line in logs.split("\n")
-                if ("pro" in line and "google/gemini-pro" in line)
-                or ("Resolved model" in line and "google/gemini-pro" in line)
+                if ("pro" in line and "google/gemini-3.1-pro-preview" in line)
+                or ("Resolved model" in line and "google/gemini-3.1-pro-preview" in line)
             ]
 
             # Log findings

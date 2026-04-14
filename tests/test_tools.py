@@ -51,7 +51,7 @@ class TestThinkDeepTool:
         try:
             # Set up environment for real provider resolution
             os.environ["OPENAI_API_KEY"] = "sk-test-key-thinkdeep-success-test-not-real"
-            os.environ["DEFAULT_MODEL"] = "o3-mini"
+            os.environ["DEFAULT_MODEL"] = "gpt-5.4"
 
             # Clear other provider keys to isolate to OpenAI
             for key in ["GEMINI_API_KEY", "XAI_API_KEY", "OPENROUTER_API_KEY"]:
@@ -76,7 +76,7 @@ class TestThinkDeepTool:
                         "findings": "Initial thinking about building a cache",
                         "problem_context": "Building a cache",
                         "focus_areas": ["performance", "scalability"],
-                        "model": "o3-mini",
+                        "model": "gpt-5.4",
                     }
                 )
 
@@ -149,7 +149,7 @@ class TestCodeReviewTool:
         try:
             # Set up environment for testing
             os.environ["OPENAI_API_KEY"] = "sk-test-key-codereview-test-not-real"
-            os.environ["DEFAULT_MODEL"] = "o3-mini"
+            os.environ["DEFAULT_MODEL"] = "gpt-5.4"
 
             # Clear other provider keys
             for key in ["GEMINI_API_KEY", "XAI_API_KEY", "OPENROUTER_API_KEY"]:
@@ -173,7 +173,7 @@ class TestCodeReviewTool:
                         "next_step_required": False,
                         "findings": "Initial security review",
                         "relevant_files": [str(test_file)],
-                        "model": "o3-mini",
+                        "model": "gpt-5.4",
                     }
                 )
                 # If we somehow get here, that's fine too
@@ -251,7 +251,7 @@ class TestAnalyzeTool:
         try:
             # Set up environment for testing
             os.environ["OPENAI_API_KEY"] = "sk-test-key-analyze-test-not-real"
-            os.environ["DEFAULT_MODEL"] = "o3-mini"
+            os.environ["DEFAULT_MODEL"] = "gpt-5.4"
 
             # Clear other provider keys
             for key in ["GEMINI_API_KEY", "XAI_API_KEY", "OPENROUTER_API_KEY"]:
@@ -277,7 +277,7 @@ class TestAnalyzeTool:
                         "relevant_files": [str(test_file)],
                         "analysis_type": "architecture",
                         "output_format": "summary",
-                        "model": "o3-mini",
+                        "model": "gpt-5.4",
                     }
                 )
                 # If we somehow get here, that's fine too
@@ -380,7 +380,7 @@ class TestAbsolutePathValidation:
         try:
             # Set up environment for testing
             os.environ["OPENAI_API_KEY"] = "sk-test-key-absolute-path-test-not-real"
-            os.environ["DEFAULT_MODEL"] = "o3-mini"
+            os.environ["DEFAULT_MODEL"] = "gpt-5.4"
 
             # Clear other provider keys
             for key in ["GEMINI_API_KEY", "XAI_API_KEY", "OPENROUTER_API_KEY"]:
@@ -404,7 +404,7 @@ class TestAbsolutePathValidation:
                         "next_step_required": False,
                         "findings": "Initial code analysis",
                         "relevant_files": ["/absolute/path/file.py"],
-                        "model": "o3-mini",
+                        "model": "gpt-5.4",
                     }
                 )
                 # If we somehow get here, that's fine too

@@ -35,7 +35,7 @@ class TestServerTools:
         try:
             # Set up environment for real provider resolution
             os.environ["OPENAI_API_KEY"] = "sk-test-key-server-chat-test-not-real"
-            os.environ["DEFAULT_MODEL"] = "o3-mini"
+            os.environ["DEFAULT_MODEL"] = "gpt-5.4"
 
             # Clear other provider keys to isolate to OpenAI
             for key in ["GEMINI_API_KEY", "XAI_API_KEY", "OPENROUTER_API_KEY"]:
@@ -51,7 +51,7 @@ class TestServerTools:
 
             # Test with real provider resolution
             try:
-                result = await handle_call_tool("chat", {"prompt": "Hello Gemini", "model": "o3-mini"})
+                result = await handle_call_tool("chat", {"prompt": "Hello Gemini", "model": "gpt-5.4"})
 
                 # If we get here, check the response format
                 assert len(result) == 1

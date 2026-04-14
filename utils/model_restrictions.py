@@ -54,6 +54,7 @@ class ModelRestrictionService:
         ProviderType.XAI: "XAI_ALLOWED_MODELS",
         ProviderType.OPENROUTER: "OPENROUTER_ALLOWED_MODELS",
         ProviderType.DIAL: "DIAL_ALLOWED_MODELS",
+        ProviderType.CUSTOM: "CUSTOM_ALLOWED_MODELS",
     }
 
     def __init__(self):

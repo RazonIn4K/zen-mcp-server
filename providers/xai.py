@@ -53,32 +53,33 @@ class XAIModelProvider(RegistryBackedProviderMixin, OpenAICompatibleProvider):
         if not allowed_models:
             return None
 
+        reasoning_model = "grok-4.20-reasoning"
+        fast_model = "grok-code-fast-1"
+
         if category == ToolModelCategory.EXTENDED_REASONING:
-            # Prefer GROK-4 for advanced reasoning with thinking mode
-            if "grok-4" in allowed_models:
-                return "grok-4"
-            elif "grok-3" in allowed_models:
-                return "grok-3"
+            if reasoning_model in allowed_models:
+                return reasoning_model
+
+            if fast_model in allowed_models:
+                return fast_model
             # Fall back to any available model
             return allowed_models[0]
 
         elif category == ToolModelCategory.FAST_RESPONSE:
-            # Prefer GROK-3-Fast for speed, then GROK-4
-            if "grok-3-fast" in allowed_models:
-                return "grok-3-fast"
-            elif "grok-4" in allowed_models:
-                return "grok-4"
+            if fast_model in allowed_models:
+                return fast_model
+
+            if reasoning_model in allowed_models:
+                return reasoning_model
             # Fall back to any available model
             return allowed_models[0]
 
         else:  # BALANCED or default
-            # Prefer GROK-4 for balanced use (best overall capabilities)
-            if "grok-4" in allowed_models:
-                return "grok-4"
-            elif "grok-3" in allowed_models:
-                return "grok-3"
-            elif "grok-3-fast" in allowed_models:
-                return "grok-3-fast"
+            if reasoning_model in allowed_models:
+                return reasoning_model
+
+            if fast_model in allowed_models:
+                return fast_model
             # Fall back to any available model
             return allowed_models[0]
 

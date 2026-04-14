@@ -21,16 +21,34 @@ import json
 import os
 import re
 import sys
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 from urllib import error, request
-
 
 DEFAULT_BASE_URL = "http://localhost:4141/v1"
 DEFAULT_ALIAS_PREFIX = "copilot"
 DEFAULT_TIMEOUT = 15
+OUTDATED_COPILOT_MODEL_PREFIXES = (
+    "gpt-3.5",
+    "gpt-4",
+    "gpt-4o",
+    "gpt-4-o",
+    "gpt-4.1",
+    "gpt-41",
+    "gpt-5.1",
+    "gpt-5.2",
+    "gpt-5-mini",
+    "text-embedding-",
+)
+OUTDATED_COPILOT_MODEL_IDS = {
+    "claude-opus-4.5",
+    "claude-sonnet-4",
+    "claude-sonnet-4.5",
+    "gemini-2.5-pro",
+}
 
 ALIAS_SANITISE_PATTERN = re.compile(r"[^a-z0-9]+")
 
@@ -53,6 +71,7 @@ DEFAULT_README = {
         "temperature_constraint": "Type of temperature constraint: 'fixed' (fixed value), 'range' (continuous range), 'discrete' (specific values), or omit for default range",
         "description": "Human-readable description of the model",
         "intelligence_score": "1-20 human rating used as the primary signal for auto-mode model ordering",
+        "allow_code_generation": "Whether this model can generate and suggest fully working code",
     },
 }
 
@@ -66,7 +85,7 @@ class CopilotModel:
     owned_by: str
 
     @classmethod
-    def from_payload(cls, payload: dict[str, Any]) -> "CopilotModel | None":
+    def from_payload(cls, payload: dict[str, Any]) -> CopilotModel | None:
         model_id = payload.get("id")
         if not isinstance(model_id, str):
             return None
@@ -79,6 +98,19 @@ class CopilotModel:
 def slugify(value: str) -> str:
     slug = ALIAS_SANITISE_PATTERN.sub("-", value.lower()).strip("-")
     return slug or "model"
+
+
+def is_current_chat_model(model: CopilotModel) -> bool:
+    """Return whether a Copilot model should be exposed for chat generation."""
+
+    base = model.model_id.lower()
+    if base in OUTDATED_COPILOT_MODEL_IDS:
+        return False
+
+    if any(base.startswith(prefix) for prefix in OUTDATED_COPILOT_MODEL_PREFIXES):
+        return False
+
+    return True
 
 
 def infer_capabilities(model_id: str) -> dict[str, Any]:
@@ -94,56 +126,180 @@ def infer_capabilities(model_id: str) -> dict[str, Any]:
     supports_json_mode = True
     supports_extended_thinking = False
     supports_temperature = True
+    allow_code_generation = False
 
-    if any(token in base for token in ("gpt-4.1", "gpt-4o", "o4")):
-        context_window = 128_000
-        max_output = 8_192
-        intelligence = 17 if "mini" not in base else 14
+    # GPT-5.4 series - latest flagship generation
+    if "gpt-5.4" in base or "gpt5.4" in base:
+        context_window = 500_000
+        max_output = 150_000
+        intelligence = 20
         supports_images = True
         supports_extended_thinking = True
+        supports_function_calling = True
+        allow_code_generation = True
+        if "pro" in base:
+            intelligence = 20
+            max_output = 300_000
+        elif "mini" in base:
+            intelligence = 18
 
-    if "o1" in base or "o3" in base:
+    # GPT-5.3 Codex - latest Codex-optimized agentic coding model
+    elif "gpt-5.3-codex" in base or "gpt5.3codex" in base:
+        context_window = 400_000
+        max_output = 128_000
+        intelligence = 19
+        supports_images = True
         supports_extended_thinking = True
-        supports_temperature = False
+        supports_function_calling = True
+        allow_code_generation = True
 
-    if "o4" in base:
-        supports_temperature = False
-
-    if "gpt-4o-mini" in base or "mini" in base:
-        intelligence = min(intelligence, 13)
+    # O3/O4 reasoning models
+    elif "o3-pro" in base or "o3pro" in base:
+        context_window = 200_000
+        max_output = 65_536
         supports_extended_thinking = False
-        max_output = 6_144 if "o4" in base else 4_096
+        supports_temperature = False
         supports_images = True
+        intelligence = 16
 
-    if "gpt-3.5" in base:
-        context_window = 16_384
-        max_output = 2_048
-        intelligence = 9
+    elif "o4-mini" in base or "o4mini" in base or "o4" in base:
+        context_window = 200_000
+        max_output = 65_536
+        supports_extended_thinking = False
+        supports_temperature = False
+        supports_images = True
+        intelligence = 13
+
+    # Claude Opus 4.6 - latest flagship
+    elif "opus" in base or "claude-opus" in base:
+        context_window = 1_000_000
+        max_output = 128_000
+        supports_images = True
+        supports_extended_thinking = True
+        supports_function_calling = True
+        intelligence = 20
+        allow_code_generation = True
+
+    # Claude Sonnet 4.6 - latest balanced Claude
+    elif "sonnet" in base or "claude-sonnet" in base:
+        context_window = 1_000_000
+        max_output = 64_000
+        supports_images = True
+        supports_extended_thinking = True
+        supports_function_calling = True
+        intelligence = 19
+        allow_code_generation = True
+
+    # Claude Haiku 4.5 - fast model
+    elif "haiku" in base or "claude-haiku" in base:
+        context_window = 200_000
+        max_output = 64_000
+        supports_images = True
+        supports_extended_thinking = True
+        supports_function_calling = True
+        intelligence = 14
+
+    # Gemini 3/3.1 - latest Google generation
+    elif "gemini-3" in base or "gemini3" in base:
+        context_window = 1_048_576
+        max_output = 65_536
+        supports_images = True
+        supports_function_calling = True
+        supports_extended_thinking = True
+        intelligence = 13 if "flash" in base else 20
+        allow_code_generation = True
+
+    # Gemini 2.5 series
+    elif "gemini" in base:
+        context_window = 1_048_576
+        max_output = 65_536
+        supports_images = True
+        supports_function_calling = True
+        if "pro" in base:
+            supports_extended_thinking = True
+            intelligence = 18
+            allow_code_generation = True
+        elif "flash" in base:
+            supports_extended_thinking = True
+            intelligence = 12
+        else:
+            supports_extended_thinking = True
+            intelligence = 16
+
+    # Grok 4 - latest (2M context)
+    elif "grok" in base:
+        context_window = 2_000_000
+        max_output = 256_000
+        supports_images = True
+        supports_extended_thinking = True
+        supports_function_calling = True
+        intelligence = 18
+        allow_code_generation = True
+        if "code" in base or "fast" in base:
+            intelligence = 15
+            supports_extended_thinking = False
+
+    # MiniMax M2.5 and Copilot internal routers
+    elif "minimax" in base or base.startswith("accounts/msft/routers/"):
+        context_window = 262_144
+        max_output = 65_536
         supports_images = False
         supports_extended_thinking = False
+        supports_function_calling = True
+        intelligence = 16 if "minimax" in base else 10
+        allow_code_generation = "minimax" in base
 
-    if "claude" in base:
-        context_window = 200_000
-        max_output = 8_192
-        supports_images = True
-        supports_extended_thinking = "sonnet" in base or "opus" in base
-        intelligence = 16 if supports_extended_thinking else 13
-
-    if "haiku" in base:
-        intelligence = 12
+    # Copilot-internal coding assistants
+    elif base.startswith("oswe-vscode") or "goldeneye" in base:
+        context_window = 128_000
+        max_output = 65_536
+        supports_images = False
         supports_extended_thinking = False
-        max_output = 6_000
+        supports_function_calling = True
+        intelligence = 13
+        allow_code_generation = True
 
-    if "gemini" in base:
+    # Llama 4 series
+    elif "llama-4" in base or "llama4" in base:
         context_window = 1_048_576
-        max_output = 8_192
+        max_output = 65_536
         supports_images = True
-        supports_extended_thinking = "pro" in base
-        intelligence = 16 if supports_extended_thinking else 13
+        supports_function_calling = True
+        supports_extended_thinking = True
+        intelligence = 16
+
+    # DeepSeek R1
+    elif "deepseek" in base:
+        context_window = 65_536
+        max_output = 32_768
+        supports_images = False
+        if "r1" in base:
+            supports_extended_thinking = True
+            intelligence = 15
+        else:
+            supports_extended_thinking = False
+            intelligence = 12
+
+    # Mistral
+    elif "mistral" in base:
+        context_window = 128_000
+        max_output = 32_000
+        supports_images = False
+        intelligence = 12
+
+    # Qwen
+    elif "qwen" in base:
+        context_window = 32_768
+        max_output = 16_384
+        supports_images = False
+        if "coder" in base:
+            intelligence = 12
+        else:
+            intelligence = 10
 
     max_image_size = 40.0 if supports_images else 0.0
 
-    return {
+    result = {
         "context_window": context_window,
         "max_output_tokens": max_output,
         "supports_extended_thinking": supports_extended_thinking,
@@ -154,6 +310,11 @@ def infer_capabilities(model_id: str) -> dict[str, Any]:
         "max_image_size_mb": max_image_size,
         "intelligence_score": intelligence,
     }
+
+    if allow_code_generation:
+        result["allow_code_generation"] = True
+
+    return result
 
 
 def build_aliases(prefix: str, model: CopilotModel, used_aliases: set[str]) -> list[str]:
@@ -331,7 +492,8 @@ def main(argv: list[str] | None = None) -> int:
     retained = retain_non_copilot_entries(registry.get("models", []), args.alias_prefix)
 
     used_aliases: set[str] = set()
-    generated = [build_entry(args.alias_prefix, model, used_aliases) for model in models]
+    current_models = [model for model in models if is_current_chat_model(model)]
+    generated = [build_entry(args.alias_prefix, model, used_aliases) for model in current_models]
     generated.sort(
         key=lambda entry: (
             -entry.get("intelligence_score", 0),
@@ -343,7 +505,8 @@ def main(argv: list[str] | None = None) -> int:
 
     save_registry(output_path, registry_payload, args.dry_run)
     print(
-        f"[sync-copilot-models] Wrote {len(generated)} Copilot models to {output_path} (retained {len(retained)} entries)."
+        f"[sync-copilot-models] Wrote {len(generated)} Copilot models to {output_path} "
+        f"(retained {len(retained)} entries, skipped {len(models) - len(current_models)} outdated/non-chat models)."
     )
 
     return 0

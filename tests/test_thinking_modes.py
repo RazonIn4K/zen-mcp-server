@@ -52,7 +52,7 @@ class TestThinkingModes:
         try:
             # Set up environment for OpenAI provider (which supports thinking mode)
             os.environ["OPENAI_API_KEY"] = "sk-test-key-minimal-thinking-test-not-real"
-            os.environ["DEFAULT_MODEL"] = "o3-mini"  # Use a model that supports thinking
+            os.environ["DEFAULT_MODEL"] = "gpt-5.4"  # Use a model that supports thinking
 
             # Clear other provider keys to isolate to OpenAI
             for key in ["GEMINI_API_KEY", "XAI_API_KEY", "OPENROUTER_API_KEY"]:
@@ -76,7 +76,7 @@ class TestThinkingModes:
                     {
                         "files": ["/absolute/path/test.py"],
                         "prompt": "What is this?",
-                        "model": "o3-mini",
+                        "model": "gpt-5.4",
                         "thinking_mode": "minimal",
                     }
                 )
@@ -125,7 +125,7 @@ class TestThinkingModes:
         try:
             # Set up environment for OpenAI provider (which supports thinking mode)
             os.environ["OPENAI_API_KEY"] = "sk-test-key-low-thinking-test-not-real"
-            os.environ["DEFAULT_MODEL"] = "o3-mini"
+            os.environ["DEFAULT_MODEL"] = "gpt-5.4"
 
             # Clear other provider keys
             for key in ["GEMINI_API_KEY", "XAI_API_KEY", "OPENROUTER_API_KEY"]:
@@ -148,7 +148,7 @@ class TestThinkingModes:
                         "files": ["/absolute/path/test.py"],
                         "thinking_mode": "low",
                         "prompt": "Test code review for validation purposes",
-                        "model": "o3-mini",
+                        "model": "gpt-5.4",
                     }
                 )
                 # If we get here, provider resolution worked
@@ -194,7 +194,7 @@ class TestThinkingModes:
         try:
             # Set up environment for OpenAI provider (which supports thinking mode)
             os.environ["OPENAI_API_KEY"] = "sk-test-key-medium-thinking-test-not-real"
-            os.environ["DEFAULT_MODEL"] = "o3-mini"
+            os.environ["DEFAULT_MODEL"] = "gpt-5.4"
 
             # Clear other provider keys to isolate to OpenAI
             for key in ["GEMINI_API_KEY", "XAI_API_KEY", "OPENROUTER_API_KEY"]:
@@ -215,7 +215,7 @@ class TestThinkingModes:
                 result = await tool.execute(
                     {
                         "prompt": "Test error",
-                        "model": "o3-mini",
+                        "model": "gpt-5.4",
                         # Not specifying thinking_mode, should use default (medium)
                     }
                 )
@@ -264,7 +264,7 @@ class TestThinkingModes:
         try:
             # Set up environment for OpenAI provider (which supports thinking mode)
             os.environ["OPENAI_API_KEY"] = "sk-test-key-high-thinking-test-not-real"
-            os.environ["DEFAULT_MODEL"] = "o3-mini"
+            os.environ["DEFAULT_MODEL"] = "gpt-5.4"
 
             # Clear other provider keys
             for key in ["GEMINI_API_KEY", "XAI_API_KEY", "OPENROUTER_API_KEY"]:
@@ -287,7 +287,7 @@ class TestThinkingModes:
                         "files": ["/absolute/path/complex.py"],
                         "prompt": "Analyze architecture",
                         "thinking_mode": "high",
-                        "model": "o3-mini",
+                        "model": "gpt-5.4",
                     }
                 )
                 # If we get here, provider resolution worked
@@ -334,7 +334,7 @@ class TestThinkingModes:
         try:
             # Set up environment for OpenAI provider (which supports thinking mode)
             os.environ["OPENAI_API_KEY"] = "sk-test-key-max-thinking-test-not-real"
-            os.environ["DEFAULT_MODEL"] = "o3-mini"
+            os.environ["DEFAULT_MODEL"] = "gpt-5.4"
             os.environ["DEFAULT_THINKING_MODE_THINKDEEP"] = "high"  # Set default to high for thinkdeep
 
             # Clear other provider keys to isolate to OpenAI
@@ -356,7 +356,7 @@ class TestThinkingModes:
                 result = await tool.execute(
                     {
                         "prompt": "Initial analysis",
-                        "model": "o3-mini",
+                        "model": "gpt-5.4",
                         # Not specifying thinking_mode, should use default (high)
                     }
                 )

@@ -13,6 +13,7 @@
 # Environment variables you can override:
 #   COPILOT_PORT           (default: 4141)
 #   COPILOT_RATE_LIMIT     (default: 2)
+#   COPILOT_REUSE_EXISTING (default: 0)  Set to 1 to reuse an existing proxy on COPILOT_PORT
 #   COPILOT_DIR_OVERRIDE   (path to a copilot-api checkout)
 #   CUSTOM_API_URL / KEY   forwarded to the server via .env or MCP config
 #   ZEN_STDIO_SILENT       set to 0 to surface setup logs on stderr
@@ -30,12 +31,15 @@ RUNSERVER_LOG="${LOG_DIR}/run-server.log"
 
 COPILOT_PORT="${COPILOT_PORT:-4141}"
 COPILOT_RATE_LIMIT="${COPILOT_RATE_LIMIT:-2}"
+COPILOT_REUSE_EXISTING="${COPILOT_REUSE_EXISTING:-0}"
 LOCAL_COPILOT_DIR_DEFAULT="$(cd "${ROOT_DIR}/.." && pwd)/copilot-api"
 COPILOT_DIR="${COPILOT_DIR_OVERRIDE:-$LOCAL_COPILOT_DIR_DEFAULT}"
 COPILOT_ARGS=(--port "${COPILOT_PORT}" --verbose)
 if [[ -n "${COPILOT_RATE_LIMIT}" ]]; then
   COPILOT_ARGS+=(--rate-limit "${COPILOT_RATE_LIMIT}" --wait)
 fi
+COPILOT_PID=""
+COPILOT_MANAGED=1
 
 timestamp() {
   date +"%Y-%m-%dT%H:%M:%S%z"
@@ -51,7 +55,7 @@ log() {
 
 cleanup() {
   local exit_code=$?
-  if [[ -n "${COPILOT_PID:-}" ]] && kill -0 "${COPILOT_PID}" 2>/dev/null; then
+  if (( COPILOT_MANAGED == 1 )) && [[ -n "${COPILOT_PID}" ]] && kill -0 "${COPILOT_PID}" 2>/dev/null; then
     log "Stopping Copilot proxy (pid ${COPILOT_PID})"
     kill "${COPILOT_PID}" 2>/dev/null || true
     wait "${COPILOT_PID}" 2>/dev/null || true
@@ -72,6 +76,16 @@ wait_for_proxy() {
     fi
     sleep 1
   done
+}
+
+is_port_listening() {
+  if command -v lsof >/dev/null 2>&1; then
+    lsof -PiTCP:"${COPILOT_PORT}" -sTCP:LISTEN -t >/dev/null 2>&1
+  elif command -v nc >/dev/null 2>&1; then
+    nc -z localhost "${COPILOT_PORT}" >/dev/null 2>&1
+  else
+    netstat -an 2>/dev/null | grep -E "[.:]${COPILOT_PORT}[^0-9].*LISTEN" >/dev/null 2>&1
+  fi
 }
 
 start_copilot_proxy() {
@@ -104,7 +118,19 @@ log "Proxy log: ${PROXY_LOG}"
 log "Sync log: ${SYNC_LOG}"
 log "Run-server log: ${RUNSERVER_LOG}"
 
-start_copilot_proxy
+if is_port_listening; then
+  if [[ "${COPILOT_REUSE_EXISTING}" == "1" ]]; then
+    COPILOT_MANAGED=0
+    log "Reusing existing Copilot proxy on port ${COPILOT_PORT}"
+  else
+    log "Port ${COPILOT_PORT} already in use. Set COPILOT_REUSE_EXISTING=1 to reuse it or pick another port."
+    exit 1
+  fi
+fi
+
+if (( COPILOT_MANAGED == 1 )); then
+  start_copilot_proxy
+fi
 if ! wait_for_proxy; then
   log "Copilot API failed to become ready on port ${COPILOT_PORT}"
   exit 1
@@ -117,8 +143,13 @@ python3 "${ROOT_DIR}/scripts/sync_copilot_models.py" >>"${SYNC_LOG}" 2>&1
 export ZEN_SKIP_INTEGRATIONS=1
 export ZEN_STDIO_SILENT="${ZEN_STDIO_SILENT:-1}"
 
-log "Preparing Zen environment via run-server.sh"
-( cd "${ROOT_DIR}" && ./run-server.sh "$@" ) >>"${RUNSERVER_LOG}" 2>&1
+PYTHON_BIN="${ROOT_DIR}/.zen_venv/bin/python"
+if [[ "${ZEN_FORCE_BOOTSTRAP:-0}" == "1" || ! -x "${PYTHON_BIN}" || ! -f "${ROOT_DIR}/.env" ]]; then
+  log "Preparing Zen environment via run-server.sh"
+  ( cd "${ROOT_DIR}" && ./run-server.sh "$@" ) >>"${RUNSERVER_LOG}" 2>&1
+else
+  log "Using existing Zen environment (set ZEN_FORCE_BOOTSTRAP=1 to rebuild)"
+fi
 
 if [[ -f "${ROOT_DIR}/.env" ]]; then
   set -a
@@ -127,7 +158,6 @@ if [[ -f "${ROOT_DIR}/.env" ]]; then
   set +a
 fi
 
-PYTHON_BIN="${ROOT_DIR}/.zen_venv/bin/python"
 if [[ ! -x "${PYTHON_BIN}" ]]; then
   log "Python virtualenv not found at ${PYTHON_BIN}"
   exit 1

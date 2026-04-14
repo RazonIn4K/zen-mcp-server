@@ -44,6 +44,8 @@ class GeminiModelProvider(RegistryBackedProviderMixin, ModelProvider):
 
     # Model-specific thinking token limits
     MAX_THINKING_TOKENS = {
+        "gemini-3.1-flash-lite-preview": 24576,
+        "gemini-3.1-pro-preview": 32768,
         "gemini-2.0-flash": 24576,  # Same as 2.5 flash for consistency
         "gemini-2.0-flash-lite": 0,  # No thinking support
         "gemini-2.5-flash": 24576,  # Flash 2.5 thinking budget limit
@@ -135,7 +137,7 @@ class GeminiModelProvider(RegistryBackedProviderMixin, ModelProvider):
 
         Args:
             prompt: The main user prompt/query to send to the model
-            model_name: Canonical model name or its alias (e.g., "gemini-2.5-pro", "flash", "pro")
+            model_name: Canonical model name or its alias (e.g., "gemini-3.1-pro-preview", "flashlite", "pro")
             system_prompt: Optional system instructions to prepend to the prompt for context/behavior
             temperature: Controls randomness in generation (0.0=deterministic, 1.0=creative), default 0.3
             max_output_tokens: Optional maximum number of tokens to generate in the response
@@ -215,15 +217,33 @@ class GeminiModelProvider(RegistryBackedProviderMixin, ModelProvider):
 
             usage = self._extract_usage(response)
 
+            response_text = None
+            try:
+                response_text = response.text
+            except Exception:
+                response_text = None
+
             finish_reason_str = "UNKNOWN"
             is_blocked_by_safety = False
             safety_feedback_details = None
 
-            if response.candidates:
-                candidate = response.candidates[0]
+            try:
+                candidates = response.candidates
+            except AttributeError:
+                candidates = None
+
+            if candidates:
+                candidate = candidates[0]
 
                 try:
                     finish_reason_enum = candidate.finish_reason
+                except AttributeError:
+                    if isinstance(candidate, dict):
+                        finish_reason_enum = candidate.get("finish_reason") or candidate.get("finishReason")
+                    else:
+                        finish_reason_enum = None
+
+                if finish_reason_enum:
                     if finish_reason_enum:
                         try:
                             finish_reason_str = finish_reason_enum.name
@@ -231,10 +251,35 @@ class GeminiModelProvider(RegistryBackedProviderMixin, ModelProvider):
                             finish_reason_str = str(finish_reason_enum)
                     else:
                         finish_reason_str = "STOP"
-                except AttributeError:
+                else:
                     finish_reason_str = "STOP"
 
-                if not response.text:
+                if not response_text:
+                    if isinstance(candidate, dict):
+                        candidate_content = candidate.get("content")
+                    else:
+                        candidate_content = getattr(candidate, "content", None)
+
+                    if isinstance(candidate_content, dict):
+                        parts = candidate_content.get("parts")
+                    else:
+                        parts = getattr(candidate_content, "parts", None) if candidate_content is not None else None
+
+                    if parts:
+                        collected_parts: list[str] = []
+                        for part in parts:
+                            if isinstance(part, dict):
+                                text_part = part.get("text")
+                            else:
+                                text_part = getattr(part, "text", None)
+
+                            if text_part:
+                                collected_parts.append(text_part)
+
+                        if collected_parts:
+                            response_text = "".join(collected_parts)
+
+                if not response_text:
                     try:
                         safety_ratings = candidate.safety_ratings
                         if safety_ratings:
@@ -264,7 +309,7 @@ class GeminiModelProvider(RegistryBackedProviderMixin, ModelProvider):
                     except (AttributeError, TypeError):
                         pass
 
-            elif response.candidates is not None and len(response.candidates) == 0:
+            elif candidates is not None and len(candidates) == 0:
                 is_blocked_by_safety = True
                 finish_reason_str = "SAFETY"
                 safety_feedback_details = "Prompt blocked, reason unavailable"
@@ -280,8 +325,11 @@ class GeminiModelProvider(RegistryBackedProviderMixin, ModelProvider):
                 except (AttributeError, TypeError):
                     pass
 
+            if response_text is None:
+                response_text = ""
+
             return ModelResponse(
-                content=response.text,
+                content=response_text,
                 usage=usage,
                 model_name=resolved_model_name,
                 friendly_name="Gemini",
@@ -471,8 +519,21 @@ class GeminiModelProvider(RegistryBackedProviderMixin, ModelProvider):
 
         # Helper to find best model from candidates
         def find_best(candidates: list[str]) -> Optional[str]:
-            """Return best model from candidates (sorted for consistency)."""
-            return sorted(candidates, reverse=True)[0] if candidates else None
+            """Return best model from candidates (ranked by capabilities)."""
+
+            if not candidates:
+                return None
+
+            ranked: list[tuple[int, int, str]] = []
+            for name in candidates:
+                capabilities = capability_map.get(name)
+                if capabilities is None:
+                    ranked.append((0, 0, name))
+                else:
+                    ranked.append((capabilities.get_effective_capability_rank(), capabilities.intelligence_score, name))
+
+            ranked.sort(key=lambda item: (-item[0], -item[1], item[2]))
+            return ranked[0][2]
 
         if category == ToolModelCategory.EXTENDED_REASONING:
             # For extended reasoning, prefer models with thinking support

@@ -25,10 +25,10 @@ class TestAliasTargetRestrictions:
         all_known = provider.list_models(respect_restrictions=False, include_aliases=True, lowercase=True, unique=True)
 
         # Should include both aliases and their targets
-        assert "mini" in all_known  # alias
-        assert "o4-mini" in all_known  # target of 'mini'
-        assert "o3mini" in all_known  # alias
-        assert "o3-mini" in all_known  # target of 'o3mini'
+        assert "gpt" in all_known  # alias
+        assert "gpt-5.4-pro" in all_known  # target of 'gpt'
+        assert "gpt54" in all_known  # alias
+        assert "gpt-5.4" in all_known  # target of 'gpt54'
 
     def test_gemini_alias_target_validation_comprehensive(self):
         """Test Gemini provider includes both aliases and targets in validation."""
@@ -41,15 +41,14 @@ class TestAliasTargetRestrictions:
         assert "flash" in all_known  # alias
         assert "gemini-2.5-flash" in all_known  # target of 'flash'
         assert "pro" in all_known  # alias
-        assert "gemini-2.5-pro" in all_known  # target of 'pro'
+        assert "gemini-3.1-pro-preview" in all_known  # target of 'pro'
 
-    @patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "o4-mini"})  # Allow target
+    @patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "gpt-5.4-pro"})  # Allow target
     def test_restriction_policy_allows_alias_when_target_allowed(self):
         """Test that restriction policy allows alias when target model is allowed.
 
-        This is the correct user-friendly behavior - if you allow 'o4-mini',
-        you should be able to use its aliases 'o4mini' and 'o4-mini'.
-        Note: 'mini' is now an alias for 'gpt-5-mini', not 'o4-mini'.
+        This is the correct user-friendly behavior - if you allow 'gpt-5.4-pro',
+        you should be able to use its aliases like 'gpt' and 'gptpro'.
         """
         # Clear cached restriction service
         import utils.model_restrictions
@@ -59,10 +58,10 @@ class TestAliasTargetRestrictions:
         provider = OpenAIModelProvider(api_key="test-key")
 
         # Both target and its actual aliases should be allowed
-        assert provider.validate_model_name("o4-mini")
-        assert provider.validate_model_name("o4mini")
+        assert provider.validate_model_name("gpt-5.4-pro")
+        assert provider.validate_model_name("gpt")
 
-    @patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "mini"})  # Allow alias only
+    @patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "gpt"})  # Allow alias only
     def test_restriction_policy_alias_allows_canonical(self):
         """Alias-only allowlists should permit both the alias and its canonical target."""
         import utils.model_restrictions
@@ -71,11 +70,11 @@ class TestAliasTargetRestrictions:
 
         provider = OpenAIModelProvider(api_key="test-key")
 
-        assert provider.validate_model_name("mini")
-        assert provider.validate_model_name("gpt-5-mini")
-        assert not provider.validate_model_name("o4-mini")
+        assert provider.validate_model_name("gpt")
+        assert provider.validate_model_name("gpt-5.4-pro")
+        assert not provider.validate_model_name("gpt-5.4")
 
-    @patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "gpt5"})
+    @patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "gpt54"})
     def test_restriction_policy_alias_allows_short_name(self):
         """Common aliases like 'gpt5' should allow their canonical forms."""
         import utils.model_restrictions
@@ -84,8 +83,8 @@ class TestAliasTargetRestrictions:
 
         provider = OpenAIModelProvider(api_key="test-key")
 
-        assert provider.validate_model_name("gpt5")
-        assert provider.validate_model_name("gpt-5")
+        assert provider.validate_model_name("gpt54")
+        assert provider.validate_model_name("gpt-5.4")
 
     @patch.dict(os.environ, {"GOOGLE_ALLOWED_MODELS": "gemini-2.5-flash"})  # Allow target
     def test_gemini_restriction_policy_allows_alias_when_target_allowed(self):
@@ -115,7 +114,7 @@ class TestAliasTargetRestrictions:
 
     def test_restriction_service_validation_includes_all_targets(self):
         """Test that restriction service validation knows about all aliases and targets."""
-        with patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "o4-mini,invalid-model"}):
+        with patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "gpt-5.4-pro,invalid-model"}):
             service = ModelRestrictionService()
 
             # Create real provider instances
@@ -131,14 +130,14 @@ class TestAliasTargetRestrictions:
 
                 # The warning should include both aliases and targets in known models
                 warning_message = str(warning_calls[0])
-                assert "o4mini" in warning_message or "o4-mini" in warning_message  # aliases should be in known models
+                assert "gptpro" in warning_message  # aliases should be in known models
 
-    @patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "mini,gpt-5-mini,o4-mini,o4mini"})  # Allow different models
+    @patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "gpt,gpt-5.4-pro,gpt54,gpt-5.4"})  # Allow different models
     def test_both_alias_and_target_allowed_when_both_specified(self):
         """Test that both alias and target work when both are explicitly allowed.
 
-        mini -> gpt-5-mini
-        o4mini -> o4-mini
+        gpt -> gpt-5.4-pro
+        gpt54 -> gpt-5.4
         """
         # Clear cached restriction service
         import utils.model_restrictions
@@ -148,12 +147,12 @@ class TestAliasTargetRestrictions:
         provider = OpenAIModelProvider(api_key="test-key")
 
         # All should be allowed since we explicitly allowed them
-        assert provider.validate_model_name("mini")  # alias for gpt-5-mini
-        assert provider.validate_model_name("gpt-5-mini")  # target
-        assert provider.validate_model_name("o4-mini")  # target
-        assert provider.validate_model_name("o4mini")  # alias for o4-mini
+        assert provider.validate_model_name("gpt")  # alias for gpt-5.4-pro
+        assert provider.validate_model_name("gpt-5.4-pro")  # target
+        assert provider.validate_model_name("gpt54")  # alias for gpt-5.4
+        assert provider.validate_model_name("gpt-5.4")  # target
 
-    @patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "gpt5"}, clear=True)
+    @patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "gpt54", "OPENAI_API_KEY": "test-key"}, clear=True)
     def test_service_alias_allows_canonical_openai(self):
         """ModelRestrictionService should permit canonical names resolved from aliases."""
         import utils.model_restrictions
@@ -162,10 +161,10 @@ class TestAliasTargetRestrictions:
         provider = OpenAIModelProvider(api_key="test-key")
         service = ModelRestrictionService()
 
-        assert service.is_allowed(ProviderType.OPENAI, "gpt-5")
-        assert provider.validate_model_name("gpt-5")
+        assert service.is_allowed(ProviderType.OPENAI, "gpt-5.4")
+        assert provider.validate_model_name("gpt-5.4")
 
-    @patch.dict(os.environ, {"GOOGLE_ALLOWED_MODELS": "flash"}, clear=True)
+    @patch.dict(os.environ, {"GOOGLE_ALLOWED_MODELS": "flash", "GEMINI_API_KEY": "test-key"}, clear=True)
     def test_service_alias_allows_canonical_gemini(self):
         """Gemini alias allowlists should permit canonical forms."""
         import utils.model_restrictions
@@ -190,14 +189,11 @@ class TestAliasTargetRestrictions:
             respect_restrictions=False, include_aliases=True, lowercase=True, unique=True
         )
 
-        # Verify that for each alias, its target is also included
+        # Verify that for each model, its aliases are also included
         for model_name, config in openai_provider.MODEL_CAPABILITIES.items():
             assert model_name.lower() in openai_all_known
-            if isinstance(config, str):  # This is an alias
-                # The target should also be in the known models
-                assert (
-                    config.lower() in openai_all_known
-                ), f"Target '{config}' for alias '{model_name}' not in known models"
+            for alias in config.aliases:
+                assert alias.lower() in openai_all_known
 
         # Test Gemini provider
         gemini_provider = GeminiModelProvider(api_key="test-key")
@@ -205,14 +201,11 @@ class TestAliasTargetRestrictions:
             respect_restrictions=False, include_aliases=True, lowercase=True, unique=True
         )
 
-        # Verify that for each alias, its target is also included
+        # Verify that for each model, its aliases are also included
         for model_name, config in gemini_provider.MODEL_CAPABILITIES.items():
             assert model_name.lower() in gemini_all_known
-            if isinstance(config, str):  # This is an alias
-                # The target should also be in the known models
-                assert (
-                    config.lower() in gemini_all_known
-                ), f"Target '{config}' for alias '{model_name}' not in known models"
+            for alias in config.aliases:
+                assert alias.lower() in gemini_all_known
 
     def test_no_duplicate_models_in_alias_aware_listing(self):
         """Test that alias-aware list_models variant doesn't return duplicates."""
@@ -255,7 +248,7 @@ class TestAliasTargetRestrictions:
             unique=True,
         )
 
-    @patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "o4-mini"})  # Restrict to specific model
+    @patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "gpt-5.4"})  # Restrict to specific model
     def test_complex_alias_chains_handled_correctly(self):
         """Test that complex alias chains are handled correctly in restrictions."""
         # Clear cached restriction service
@@ -265,12 +258,11 @@ class TestAliasTargetRestrictions:
 
         provider = OpenAIModelProvider(api_key="test-key")
 
-        # Only o4-mini should be allowed
-        assert provider.validate_model_name("o4-mini")
+        # Only gpt-5.4 should be allowed
+        assert provider.validate_model_name("gpt-5.4")
 
         # Other models should be blocked
-        assert not provider.validate_model_name("o3")
-        assert not provider.validate_model_name("o3-mini")
+        assert not provider.validate_model_name("gpt-5.4-pro")
 
     def test_critical_regression_validation_sees_alias_targets(self):
         """CRITICAL REGRESSION TEST: Ensure validation can see alias target models.
@@ -300,43 +292,43 @@ class TestAliasTargetRestrictions:
         all_known = provider.list_models(respect_restrictions=False, include_aliases=True, lowercase=True, unique=True)
 
         # Critical check: should contain both aliases and their targets
-        assert "mini" in all_known  # alias
-        assert "o4-mini" in all_known  # target of mini - THIS WAS MISSING BEFORE
-        assert "o3mini" in all_known  # alias
-        assert "o3-mini" in all_known  # target of o3mini - THIS WAS MISSING BEFORE
+        assert "gpt" in all_known  # alias
+        assert "gpt-5.4-pro" in all_known  # target of gpt
+        assert "gpt54" in all_known  # alias
+        assert "gpt-5.4" in all_known  # target of gpt54
 
         # Simulate restriction validation with a target model name
-        # This should NOT warn because "o4-mini" is a valid target
+        # This should NOT warn because "gpt-5.4-pro" is a valid target
         with patch("utils.model_restrictions.logger") as mock_logger:
             # Set restriction to target model (not alias)
-            service.restrictions = {ProviderType.OPENAI: {"o4-mini"}}
+            service.restrictions = {ProviderType.OPENAI: {"gpt-5.4-pro"}}
 
-            # This should NOT generate warnings because o4-mini is known
+            # This should NOT generate warnings because gpt-5.4-pro is known
             service.validate_against_known_models(provider_instances)
 
-            # Should NOT have any warnings about o4-mini being unrecognized
+            # Should NOT have any warnings about gpt-5.4-pro being unrecognized
             warning_calls = [
                 call
                 for call in mock_logger.warning.call_args_list
-                if "o4-mini" in str(call) and "not a recognized" in str(call)
+                if "gpt-5.4-pro" in str(call) and "not a recognized" in str(call)
             ]
-            assert len(warning_calls) == 0, "o4-mini should be recognized as valid target model"
+            assert len(warning_calls) == 0, "gpt-5.4-pro should be recognized as valid target model"
 
         # Test the reverse: alias in restriction should also be recognized
         with patch("utils.model_restrictions.logger") as mock_logger:
             # Set restriction to alias name
-            service.restrictions = {ProviderType.OPENAI: {"mini"}}
+            service.restrictions = {ProviderType.OPENAI: {"gpt"}}
 
-            # This should NOT generate warnings because mini is known
+            # This should NOT generate warnings because gpt is known
             service.validate_against_known_models(provider_instances)
 
-            # Should NOT have any warnings about mini being unrecognized
+            # Should NOT have any warnings about gpt being unrecognized
             warning_calls = [
                 call
                 for call in mock_logger.warning.call_args_list
-                if "mini" in str(call) and "not a recognized" in str(call)
+                if "gpt" in str(call) and "not a recognized" in str(call)
             ]
-            assert len(warning_calls) == 0, "mini should be recognized as valid alias"
+            assert len(warning_calls) == 0, "gpt should be recognized as valid alias"
 
     def test_critical_regression_prevents_policy_bypass(self):
         """CRITICAL REGRESSION TEST: Prevent policy bypass through missing target validation.
@@ -350,7 +342,7 @@ class TestAliasTargetRestrictions:
         it appear that target-based restrictions don't work.
         """
         # Test with a made-up restriction scenario
-        with patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "o4-mini,o3-mini"}):
+        with patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "gpt-5.4-pro,gpt-5.4"}):
             # Clear cached restriction service
             import utils.model_restrictions
 
@@ -363,8 +355,8 @@ class TestAliasTargetRestrictions:
             all_known = provider.list_models(
                 respect_restrictions=False, include_aliases=True, lowercase=True, unique=True
             )
-            assert "o4-mini" in all_known, "Target model o4-mini should be known"
-            assert "o3-mini" in all_known, "Target model o3-mini should be known"
+            assert "gpt-5.4-pro" in all_known, "Target model gpt-5.4-pro should be known"
+            assert "gpt-5.4" in all_known, "Target model gpt-5.4 should be known"
 
             # Validation should not warn about these being unrecognized
             with patch("utils.model_restrictions.logger") as mock_logger:
@@ -374,11 +366,11 @@ class TestAliasTargetRestrictions:
                 # Should not warn about our allowed models being unrecognized
                 all_warnings = [str(call) for call in mock_logger.warning.call_args_list]
                 for warning in all_warnings:
-                    assert "o4-mini" not in warning or "not a recognized" not in warning
-                    assert "o3-mini" not in warning or "not a recognized" not in warning
+                    assert "gpt-5.4-pro" not in warning or "not a recognized" not in warning
+                    assert "gpt-5.4" not in warning or "not a recognized" not in warning
 
             # The restriction should actually work
-            assert provider.validate_model_name("o4-mini")
-            assert provider.validate_model_name("o3-mini")
-            assert not provider.validate_model_name("o3-pro")  # not in allowed list
-            assert not provider.validate_model_name("o3")  # not in allowed list
+            assert provider.validate_model_name("gpt-5.4-pro")
+            assert provider.validate_model_name("gpt-5.4")
+            assert not provider.validate_model_name("gpt-4")  # not in allowed list
+            assert not provider.validate_model_name("gpt-5")  # not in allowed list

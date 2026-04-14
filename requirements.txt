@@ -5,6 +5,9 @@ pydantic>=2.0.0
 python-dotenv>=1.0.0
 importlib-resources>=5.0.0; python_version<"3.9"
 
+# Optional: Multi-agent support (install with: pip install redis)
+# redis>=5.0.0  # For USE_REDIS_STORAGE=1 multi-agent scenarios
+
 # Development dependencies (install with pip install -r requirements-dev.txt)
 # pytest>=7.4.0
 # pytest-asyncio>=0.21.0

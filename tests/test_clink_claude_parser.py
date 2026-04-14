@@ -11,7 +11,7 @@ def _build_success_payload() -> str:
         '{"type":"result","subtype":"success","is_error":false,"duration_ms":1234,'
         '"duration_api_ms":1200,"num_turns":1,"result":"42","session_id":"abc","total_cost_usd":0.12,'
         '"usage":{"input_tokens":10,"output_tokens":5},'
-        '"modelUsage":{"claude-sonnet-4-5-20250929":{"inputTokens":10,"outputTokens":5}}}'
+        '"modelUsage":{"claude-sonnet-4-6-20260303":{"inputTokens":10,"outputTokens":5}}}'
     )
 
 
@@ -22,7 +22,7 @@ def test_claude_parser_extracts_result_and_metadata():
     parsed = parser.parse(stdout=stdout, stderr="")
 
     assert parsed.content == "42"
-    assert parsed.metadata["model_used"] == "claude-sonnet-4-5-20250929"
+    assert parsed.metadata["model_used"] == "claude-sonnet-4-6-20260303"
     assert parsed.metadata["usage"]["output_tokens"] == 5
     assert parsed.metadata["is_error"] is False
 

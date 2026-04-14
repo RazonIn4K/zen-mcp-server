@@ -82,8 +82,8 @@ def test_error_listing_respects_env_restrictions(monkeypatch, reset_registry):
         pass
 
     monkeypatch.setenv("GOOGLE_ALLOWED_MODELS", "gemini-2.5-pro")
-    monkeypatch.setenv("OPENAI_ALLOWED_MODELS", "gpt-5")
-    monkeypatch.setenv("OPENROUTER_ALLOWED_MODELS", "gpt5nano")
+    monkeypatch.setenv("OPENAI_ALLOWED_MODELS", "gpt-5.4-pro")
+    monkeypatch.setenv("OPENROUTER_ALLOWED_MODELS", "openai/gpt-5.4")
     monkeypatch.setenv("XAI_ALLOWED_MODELS", "")
 
     import config
@@ -103,8 +103,8 @@ def test_error_listing_respects_env_restrictions(monkeypatch, reset_registry):
         ("OPENAI_API_KEY", "test-openai"),
         ("OPENROUTER_API_KEY", "test-openrouter"),
         ("GOOGLE_ALLOWED_MODELS", "gemini-2.5-pro"),
-        ("OPENAI_ALLOWED_MODELS", "gpt-5"),
-        ("OPENROUTER_ALLOWED_MODELS", "gpt5nano"),
+        ("OPENAI_ALLOWED_MODELS", "gpt-5.4-pro"),
+        ("OPENROUTER_ALLOWED_MODELS", "openai/gpt-5.4"),
         ("XAI_ALLOWED_MODELS", ""),
     ):
         monkeypatch.setenv(key, value)
@@ -138,7 +138,7 @@ def test_error_listing_respects_env_restrictions(monkeypatch, reset_registry):
     assert payload["status"] == "error"
 
     available_models = _extract_available_models(payload["content"])
-    assert set(available_models) == {"gemini-2.5-pro", "gpt-5", "gpt5nano", "openai/gpt-5-nano"}
+    assert set(available_models) == {"gemini-2.5-pro", "gpt-5.4-pro", "openai/gpt-5.4"}
 
 
 @pytest.mark.no_mock_provider
@@ -224,6 +224,6 @@ def test_error_listing_without_restrictions_shows_full_catalog(monkeypatch, rese
 
     available_models = _extract_available_models(payload["content"])
     assert "gemini-2.5-pro" in available_models
-    assert "gpt-5" in available_models
+    assert "gpt-5.4-pro" in available_models
     assert "grok-4" in available_models
     assert len(available_models) >= 5

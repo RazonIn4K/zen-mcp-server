@@ -52,13 +52,13 @@ The curated defaults in `conf/openrouter_models.json` include popular entries su
 
 | Alias | Canonical Model | Highlights |
 |-------|-----------------|------------|
-| `opus`, `claude-opus` | `anthropic/claude-opus-4.1` | Flagship Claude reasoning model with vision |
-| `sonnet`, `sonnet4.5` | `anthropic/claude-sonnet-4.5` | Balanced Claude with high context window |
-| `haiku` | `anthropic/claude-3.5-haiku` | Fast Claude option with vision |
-| `pro`, `gemini` | `google/gemini-2.5-pro` | Frontier Gemini with extended thinking |
-| `flash` | `google/gemini-2.5-flash` | Ultra-fast Gemini with vision |
+| `opus`, `claude-opus` | `anthropic/claude-opus-4.6` | Flagship Claude reasoning model with vision |
+| `sonnet`, `sonnet4.6` | `anthropic/claude-sonnet-4.6` | Balanced Claude with high context window |
+| `haiku`, `haiku4.5` | `anthropic/claude-haiku-4.5` | Fast Claude 4.5 option with vision |
+| `pro`, `gemini` | `google/gemini-3.1-pro-preview` | Frontier Gemini with extended thinking |
+| `flashlite` | `google/gemini-3.1-flash-lite-preview` | Fast Gemini with vision |
 | `mistral` | `mistralai/mistral-large-2411` | Frontier Mistral (text only) |
-| `llama3` | `meta-llama/llama-3-70b` | Large open-weight text model |
+| `llama` | `meta-llama/llama-4-maverick` | Large open-weight text model |
 | `deepseek-r1` | `deepseek/deepseek-r1-0528` | DeepSeek reasoning model |
 | `perplexity` | `perplexity/llama-3-sonar-large-32k-online` | Search-augmented model |
 
@@ -68,7 +68,9 @@ Consult the JSON file for the full list, aliases, and capability flags. Add new 
 
 | Alias | Maps to Local Model | Note |
 |-------|-------------------|------|
-| `local-llama`, `local` | `llama3.2` | Requires `CUSTOM_API_URL` configured |
+| `copilot/gpt`, `copilot/gpt-5.4` | `gpt-5.4` | Requires `CUSTOM_API_URL` configured |
+| `copilot/codex`, `copilot/gpt-5.3-codex` | `gpt-5.3-codex` | Requires `CUSTOM_API_URL` configured |
+| `copilot/grok-code` | `grok-code-fast-1` | Requires `CUSTOM_API_URL` configured |
 
 View the baseline OpenRouter catalogue in [`conf/openrouter_models.json`](conf/openrouter_models.json) and populate [`conf/custom_models.json`](conf/custom_models.json) with your local models.
 
@@ -114,7 +116,7 @@ For local models like Ollama, vLLM, LM Studio, or any OpenAI-compatible API:
 ```bash
 # Example: Ollama
 ollama serve
-ollama pull llama3.2
+ollama pull <model-name>
 
 # Example: vLLM
 python -m vllm.entrypoints.openai.api_server --model meta-llama/Llama-2-7b-chat-hf
@@ -128,7 +130,7 @@ python -m vllm.entrypoints.openai.api_server --model meta-llama/Llama-2-7b-chat-
 # Add to your .env file
 CUSTOM_API_URL=http://localhost:11434/v1  # Ollama example
 CUSTOM_API_KEY=                                      # Empty for Ollama (no auth needed)
-CUSTOM_MODEL_NAME=llama3.2                          # Default model to use
+CUSTOM_MODEL_NAME=<model-name>                      # Default model to use
 ```
 
 **Local Model Connection**
@@ -146,7 +148,7 @@ CUSTOM_API_URL=http://localhost:11434/v1  # Ollama default port
 ```bash
 CUSTOM_API_URL=http://localhost:11434/v1
 CUSTOM_API_KEY=
-CUSTOM_MODEL_NAME=llama3.2
+CUSTOM_MODEL_NAME=<model-name>
 ```
 
 **vLLM:**
@@ -187,33 +189,33 @@ and merges them with any existing local models in `conf/custom_models.json`. Re-
 account gains new models so Zen stays in sync.
 
 Need only the newest Copilot models? Set `CUSTOM_ALLOWED_MODELS` (see `copilot.env.example`) to the aliases you want
-exposed—e.g. `copilot/claude-sonnet-4.5`, `copilot/gpt-5`, `copilot/gpt-5-codex`, `copilot/grok-code-fast-1`.
+exposed - e.g. `copilot/claude-sonnet-4.6`, `copilot/gpt-5.4`, `copilot/gpt-5.3-codex`, `copilot/grok-code-fast-1`.
 
 ## Using Models
 
 **Using model aliases (from the registry files):**
 ```
 # OpenRouter models:
-"Use opus for deep analysis"         # → anthropic/claude-opus-4
-"Use sonnet to review this code"     # → anthropic/claude-sonnet-4
-"Use pro via zen to analyze this"    # → google/gemini-2.5-pro
-"Use gpt4o via zen to analyze this"  # → openai/gpt-4o
+"Use opus for deep analysis"         # → anthropic/claude-opus-4.6
+"Use sonnet to review this code"     # → anthropic/claude-sonnet-4.6
+"Use pro via zen to analyze this"    # → google/gemini-3.1-pro-preview
+"Use gpt54 via zen to analyze this"  # → openai/gpt-5.4
 "Use mistral via zen to optimize"    # → mistral/mistral-large
 
 # Local models (with custom URL configured):
-"Use local-llama to analyze this code"     # → llama3.2 (local)
-"Use local to debug this function"         # → llama3.2 (local)
+"Use copilot/gpt to analyze this code"     # → gpt-5.4 via custom proxy
+"Use copilot/grok-code to debug this function" # → grok-code-fast-1 via custom proxy
 ```
 
 **Using full model names:**
 ```
 # OpenRouter models:
-"Use anthropic/claude-opus-4 via zen for deep analysis"
-"Use openai/gpt-4o via zen to debug this"
+"Use anthropic/claude-opus-4.6 via zen for deep analysis"
+"Use openai/gpt-5.4 via zen to debug this"
 "Use deepseek/deepseek-coder via zen to generate code"
 
 # Local/custom models:
-"Use llama3.2 via zen to review this"
+"Use model-name via zen to review this"
 "Use meta-llama/Llama-2-7b-chat-hf via zen to analyze"
 ```
 
@@ -276,7 +278,7 @@ Edit `conf/openrouter_models.json` to tweak OpenRouter behaviour or `conf/custom
 ```
 
 **Field explanations:**
-- `model_name`: The model identifier (OpenRouter format like `vendor/model` or local name like `llama3.2`)
+- `model_name`: The model identifier (OpenRouter format like `vendor/model`, Copilot proxy ID, or local model name)
 - `aliases`: Array of short names users can type instead of the full model name
 - `context_window`: Total tokens the model can process (input + output combined)
 - `supports_extended_thinking`: Whether the model has extended reasoning capabilities

@@ -382,6 +382,15 @@ class ModelProvider(ABC):
         if restriction_service.is_allowed(self.get_provider_type(), canonical_name, requested_name):
             return
 
+        allowed_models = restriction_service.get_allowed_models(self.get_provider_type())
+        if isinstance(allowed_models, (set, list, tuple)):
+            allowed_set = {str(model).lower() for model in allowed_models}
+        else:
+            allowed_set = set()
+
+        if allowed_set and {alias.lower() for alias in capabilities.aliases} & allowed_set:
+            return
+
         raise ValueError(
             f"{self.get_provider_type().value} model '{canonical_name}' is not allowed by restriction policy."
         )

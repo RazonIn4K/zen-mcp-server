@@ -26,6 +26,7 @@ class TestAutoModeCustomProviderOnly:
             "CUSTOM_API_URL",
             "CUSTOM_API_KEY",
             "DEFAULT_MODEL",
+            "CUSTOM_ALLOWED_MODELS",
         ]:
             self._original_env[key] = os.environ.get(key)
 
@@ -156,8 +157,8 @@ class TestAutoModeCustomProviderOnly:
             custom_provider = ModelProviderRegistry.get_provider(ProviderType.CUSTOM)
             assert custom_provider is not None
 
-            # Test that it can validate some typical custom model names
-            test_models = ["llama3.2", "llama3.2:latest", "local-model", "ollama-model"]
+            # Test that it can validate some current custom/Copilot model names
+            test_models = ["gpt-5.4", "copilot/gpt", "grok-code-fast-1", "copilot/grok-code"]
 
             for model in test_models:
                 is_valid = custom_provider.validate_model_name(model)
@@ -201,8 +202,43 @@ class TestAutoModeCustomProviderOnly:
 
                 # Should get a valid model name, not the hardcoded fallback
                 assert (
-                    fallback_model != "gemini-2.5-flash"
+                    fallback_model != "gemini-3.1-flash-lite-preview"
                 ), "Should not fallback to hardcoded Gemini model when custom provider is available"
 
             except Exception as e:
                 pytest.fail(f"Getting fallback model failed: {e}")
+
+    def test_custom_allowed_models_filter_available_and_defaults(self):
+        """Ensure CUSTOM_ALLOWED_MODELS restricts advertised models and fallbacks."""
+
+        test_env = {
+            "CUSTOM_API_URL": "http://localhost:11434/v1",
+            "CUSTOM_API_KEY": "",
+            "CUSTOM_ALLOWED_MODELS": "gpt-5.4,gpt-5.4-mini",
+            "DEFAULT_MODEL": "auto",
+        }
+
+        with patch.dict(os.environ, test_env, clear=False):
+            # Clear other provider keys
+            for key in ["GEMINI_API_KEY", "OPENAI_API_KEY", "XAI_API_KEY", "OPENROUTER_API_KEY", "DIAL_API_KEY"]:
+                if key in os.environ:
+                    del os.environ[key]
+
+            # Reload config to apply DEFAULT_MODEL changes
+            import config
+
+            importlib.reload(config)
+
+            from providers.custom import CustomProvider
+            from tools.models import ToolModelCategory
+
+            ModelProviderRegistry.register_provider(ProviderType.CUSTOM, CustomProvider)
+
+            available_models = ModelProviderRegistry.get_available_models(respect_restrictions=True)
+
+            # Advertised models should exclude disallowed entries while keeping allowed ones
+            assert "claude-3.5-sonnet" not in available_models
+            assert "gpt-5.4" in available_models or "gpt-5.4-mini" in available_models
+
+            fallback_model = ModelProviderRegistry.get_preferred_fallback_model(ToolModelCategory.BALANCED)
+            assert fallback_model in {"gpt-5.4", "gpt-5.4-mini"}

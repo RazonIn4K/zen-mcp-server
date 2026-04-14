@@ -20,22 +20,22 @@ class TestSupportedModelsAliases:
 
         # Test specific aliases
         assert "flash" in provider.MODEL_CAPABILITIES["gemini-2.5-flash"].aliases
-        assert "pro" in provider.MODEL_CAPABILITIES["gemini-2.5-pro"].aliases
-        assert "flash-2.0" in provider.MODEL_CAPABILITIES["gemini-2.0-flash"].aliases
-        assert "flash2" in provider.MODEL_CAPABILITIES["gemini-2.0-flash"].aliases
-        assert "flashlite" in provider.MODEL_CAPABILITIES["gemini-2.0-flash-lite"].aliases
-        assert "flash-lite" in provider.MODEL_CAPABILITIES["gemini-2.0-flash-lite"].aliases
+        assert "flash2.5" in provider.MODEL_CAPABILITIES["gemini-2.5-flash"].aliases
+        assert "pro" in provider.MODEL_CAPABILITIES["gemini-3.1-pro-preview"].aliases
+        assert "pro2.5" in provider.MODEL_CAPABILITIES["gemini-2.5-pro"].aliases
+        assert "flashlite" in provider.MODEL_CAPABILITIES["gemini-3.1-flash-lite-preview"].aliases
+        assert "flash-lite" in provider.MODEL_CAPABILITIES["gemini-3.1-flash-lite-preview"].aliases
 
         # Test alias resolution
         assert provider._resolve_model_name("flash") == "gemini-2.5-flash"
-        assert provider._resolve_model_name("pro") == "gemini-2.5-pro"
-        assert provider._resolve_model_name("flash-2.0") == "gemini-2.0-flash"
-        assert provider._resolve_model_name("flash2") == "gemini-2.0-flash"
-        assert provider._resolve_model_name("flashlite") == "gemini-2.0-flash-lite"
+        assert provider._resolve_model_name("flash2.5") == "gemini-2.5-flash"
+        assert provider._resolve_model_name("pro") == "gemini-3.1-pro-preview"
+        assert provider._resolve_model_name("pro2.5") == "gemini-2.5-pro"
+        assert provider._resolve_model_name("flashlite") == "gemini-3.1-flash-lite-preview"
 
         # Test case insensitive resolution
         assert provider._resolve_model_name("Flash") == "gemini-2.5-flash"
-        assert provider._resolve_model_name("PRO") == "gemini-2.5-pro"
+        assert provider._resolve_model_name("PRO") == "gemini-3.1-pro-preview"
 
     def test_openai_provider_aliases(self):
         """Test OpenAI provider's alias structure."""
@@ -47,24 +47,19 @@ class TestSupportedModelsAliases:
             assert isinstance(config.aliases, list), f"{model_name} aliases must be a list"
 
         # Test specific aliases
-        # "mini" is now an alias for gpt-5-mini, not o4-mini
-        assert "mini" in provider.MODEL_CAPABILITIES["gpt-5-mini"].aliases
-        assert "o4mini" in provider.MODEL_CAPABILITIES["o4-mini"].aliases
-        # o4-mini is no longer in its own aliases (removed self-reference)
-        assert "o3mini" in provider.MODEL_CAPABILITIES["o3-mini"].aliases
-        assert "o3pro" in provider.MODEL_CAPABILITIES["o3-pro"].aliases
-        assert "gpt4.1" in provider.MODEL_CAPABILITIES["gpt-4.1"].aliases
+        assert "gpt" in provider.MODEL_CAPABILITIES["gpt-5.4-pro"].aliases
+        assert "gptpro" in provider.MODEL_CAPABILITIES["gpt-5.4-pro"].aliases
+        assert "gpt54" in provider.MODEL_CAPABILITIES["gpt-5.4"].aliases
 
         # Test alias resolution
-        assert provider._resolve_model_name("mini") == "gpt-5-mini"  # mini -> gpt-5-mini now
-        assert provider._resolve_model_name("o3mini") == "o3-mini"
-        assert provider._resolve_model_name("o3pro") == "o3-pro"  # o3pro resolves to o3-pro
-        assert provider._resolve_model_name("o4mini") == "o4-mini"
-        assert provider._resolve_model_name("gpt4.1") == "gpt-4.1"  # gpt4.1 resolves to gpt-4.1
+        assert provider._resolve_model_name("gpt") == "gpt-5.4-pro"
+        assert provider._resolve_model_name("gptpro") == "gpt-5.4-pro"
+        assert provider._resolve_model_name("gpt54") == "gpt-5.4"
+        assert provider._resolve_model_name("gpt5.4") == "gpt-5.4"
 
         # Test case insensitive resolution
-        assert provider._resolve_model_name("Mini") == "gpt-5-mini"  # mini -> gpt-5-mini now
-        assert provider._resolve_model_name("O3MINI") == "o3-mini"
+        assert provider._resolve_model_name("GPT") == "gpt-5.4-pro"
+        assert provider._resolve_model_name("GPT54") == "gpt-5.4"
 
     def test_xai_provider_aliases(self):
         """Test XAI provider's alias structure."""
@@ -76,22 +71,22 @@ class TestSupportedModelsAliases:
             assert isinstance(config.aliases, list), f"{model_name} aliases must be a list"
 
         # Test specific aliases
-        assert "grok" in provider.MODEL_CAPABILITIES["grok-4"].aliases
-        assert "grok4" in provider.MODEL_CAPABILITIES["grok-4"].aliases
-        assert "grok3" in provider.MODEL_CAPABILITIES["grok-3"].aliases
-        assert "grok3fast" in provider.MODEL_CAPABILITIES["grok-3-fast"].aliases
-        assert "grokfast" in provider.MODEL_CAPABILITIES["grok-3-fast"].aliases
+        assert "grok" in provider.MODEL_CAPABILITIES["grok-4.20-reasoning"].aliases
+        assert "grok4" in provider.MODEL_CAPABILITIES["grok-4.20-reasoning"].aliases
+        assert "grok-fast" in provider.MODEL_CAPABILITIES["grok-code-fast-1"].aliases
+        assert "grok4fast" in provider.MODEL_CAPABILITIES["grok-code-fast-1"].aliases
+        assert "grokcode" in provider.MODEL_CAPABILITIES["grok-code-fast-1"].aliases
 
         # Test alias resolution
-        assert provider._resolve_model_name("grok") == "grok-4"
-        assert provider._resolve_model_name("grok4") == "grok-4"
-        assert provider._resolve_model_name("grok3") == "grok-3"
-        assert provider._resolve_model_name("grok3fast") == "grok-3-fast"
-        assert provider._resolve_model_name("grokfast") == "grok-3-fast"
+        assert provider._resolve_model_name("grok") == "grok-4.20-reasoning"
+        assert provider._resolve_model_name("grok4") == "grok-4.20-reasoning"
+        assert provider._resolve_model_name("grok-fast") == "grok-code-fast-1"
+        assert provider._resolve_model_name("grok4fast") == "grok-code-fast-1"
+        assert provider._resolve_model_name("grokcode") == "grok-code-fast-1"
 
         # Test case insensitive resolution
-        assert provider._resolve_model_name("Grok") == "grok-4"
-        assert provider._resolve_model_name("GROKFAST") == "grok-3-fast"
+        assert provider._resolve_model_name("Grok") == "grok-4.20-reasoning"
+        assert provider._resolve_model_name("GROK-FAST") == "grok-code-fast-1"
 
     def test_dial_provider_aliases(self):
         """Test DIAL provider's alias structure."""
@@ -103,20 +98,15 @@ class TestSupportedModelsAliases:
             assert isinstance(config.aliases, list), f"{model_name} aliases must be a list"
 
         # Test specific aliases
-        assert "o3" in provider.MODEL_CAPABILITIES["o3-2025-04-16"].aliases
-        assert "o4-mini" in provider.MODEL_CAPABILITIES["o4-mini-2025-04-16"].aliases
         assert "sonnet-4.1" in provider.MODEL_CAPABILITIES["anthropic.claude-sonnet-4.1-20250805-v1:0"].aliases
         assert "opus-4.1" in provider.MODEL_CAPABILITIES["anthropic.claude-opus-4.1-20250805-v1:0"].aliases
         assert "gemini-2.5-pro" in provider.MODEL_CAPABILITIES["gemini-2.5-pro-preview-05-06"].aliases
 
         # Test alias resolution
-        assert provider._resolve_model_name("o3") == "o3-2025-04-16"
-        assert provider._resolve_model_name("o4-mini") == "o4-mini-2025-04-16"
         assert provider._resolve_model_name("sonnet-4.1") == "anthropic.claude-sonnet-4.1-20250805-v1:0"
         assert provider._resolve_model_name("opus-4.1") == "anthropic.claude-opus-4.1-20250805-v1:0"
 
         # Test case insensitive resolution
-        assert provider._resolve_model_name("O3") == "o3-2025-04-16"
         assert provider._resolve_model_name("SONNET-4.1") == "anthropic.claude-sonnet-4.1-20250805-v1:0"
 
     def test_list_models_includes_aliases(self):
@@ -126,30 +116,32 @@ class TestSupportedModelsAliases:
         gemini_models = gemini_provider.list_models(respect_restrictions=False)
         assert "gemini-2.5-flash" in gemini_models
         assert "flash" in gemini_models
-        assert "gemini-2.5-pro" in gemini_models
+        assert "gemini-3.1-pro-preview" in gemini_models
         assert "pro" in gemini_models
+        assert "gemini-2.5-pro" in gemini_models
+        assert "pro2.5" in gemini_models
 
         # Test OpenAI
         openai_provider = OpenAIModelProvider("test-key")
         openai_models = openai_provider.list_models(respect_restrictions=False)
-        assert "o4-mini" in openai_models
-        assert "mini" in openai_models
-        assert "o3-mini" in openai_models
-        assert "o3mini" in openai_models
+        assert "gpt-5.4-pro" in openai_models
+        assert "gpt" in openai_models
+        assert "gpt-5.4" in openai_models
+        assert "gpt54" in openai_models
 
         # Test XAI
         xai_provider = XAIModelProvider("test-key")
         xai_models = xai_provider.list_models(respect_restrictions=False)
-        assert "grok-3" in xai_models
+        assert "grok-4.20-reasoning" in xai_models
         assert "grok" in xai_models
-        assert "grok-3-fast" in xai_models
-        assert "grokfast" in xai_models
+        assert "grok-code-fast-1" in xai_models
+        assert "grok-fast" in xai_models
 
         # Test DIAL
         dial_provider = DIALModelProvider("test-key")
         dial_models = dial_provider.list_models(respect_restrictions=False)
-        assert "o3-2025-04-16" in dial_models
-        assert "o3" in dial_models
+        assert "anthropic.claude-sonnet-4.1-20250805-v1:0" in dial_models
+        assert "sonnet-4.1" in dial_models
 
     def test_list_models_all_known_variant_includes_aliases(self):
         """Unified list_models should support lowercase, alias-inclusive listings."""
@@ -176,10 +168,10 @@ class TestSupportedModelsAliases:
             lowercase=True,
             unique=True,
         )
-        assert "o4-mini" in openai_all
-        assert "mini" in openai_all
-        assert "o3-mini" in openai_all
-        assert "o3mini" in openai_all
+        assert "gpt-5.4-pro" in openai_all
+        assert "gpt" in openai_all
+        assert "gpt-5.4" in openai_all
+        assert "gpt54" in openai_all
         # All should be lowercase
         assert all(model == model.lower() for model in openai_all)
 
@@ -215,4 +207,4 @@ class TestSupportedModelsAliases:
             # Test with unknown model name
             assert provider._resolve_model_name("unknown-model") == "unknown-model"
             assert provider._resolve_model_name("gpt-4") == "gpt-4"
-            assert provider._resolve_model_name("claude-3") == "claude-3"
+            assert provider._resolve_model_name("claude-4") == "claude-4"

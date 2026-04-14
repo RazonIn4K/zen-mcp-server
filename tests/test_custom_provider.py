@@ -40,7 +40,7 @@ class TestCustomProvider:
         provider = CustomProvider(api_key="test-key", base_url="http://localhost:11434/v1")
 
         # Known model should validate
-        assert provider.validate_model_name("llama3.2")
+        assert provider.validate_model_name("grok-code-fast-1")
 
         # For custom provider, unknown models return False when not in registry
         # This is expected behavior - custom models need to be declared in custom_models.json
@@ -60,10 +60,10 @@ class TestCustomProvider:
 
             # OpenRouter-backed models should be handled by the OpenRouter provider
             with pytest.raises(ValueError):
-                provider.get_capabilities("o3")
+                provider.get_capabilities("gpt")
 
             # Test with a custom model from the local registry
-            capabilities = provider.get_capabilities("local-llama")
+            capabilities = provider.get_capabilities("grok-code-fast-1")
             assert capabilities.provider == ProviderType.CUSTOM
             assert capabilities.context_window > 0
 
@@ -87,20 +87,20 @@ class TestCustomProvider:
         provider = CustomProvider(api_key="test-key", base_url="http://localhost:11434/v1")
 
         # Test that aliases resolve properly
-        # "llama" now resolves to "meta-llama/llama-3-70b" (the OpenRouter model)
+        # "llama" now resolves to the latest Llama entry in the OpenRouter registry.
         resolved = provider._resolve_model_name("llama")
-        assert resolved == "meta-llama/llama-3-70b"
+        assert resolved == "meta-llama/llama-4-maverick"
 
-        # Test local model alias
-        resolved_local = provider._resolve_model_name("local-llama")
-        assert resolved_local == "llama3.2"
+        # Test Copilot model alias
+        resolved_local = provider._resolve_model_name("copilot/grok-code")
+        assert resolved_local == "grok-code-fast-1"
 
     def test_no_thinking_mode_support(self):
         """Custom provider generic capabilities default to no thinking mode."""
         provider = CustomProvider(api_key="test-key", base_url="http://localhost:11434/v1")
 
-        # llama3.2 is a known model that should work
-        assert not provider.get_capabilities("llama3.2").supports_extended_thinking
+        # grok-code-fast-1 is a known Copilot model that should work
+        assert not provider.get_capabilities("grok-code-fast-1").supports_extended_thinking
 
         # Unknown models should raise error
         with pytest.raises(ValueError, match="Unsupported model 'any-model' for provider custom"):
@@ -117,7 +117,7 @@ class TestCustomProvider:
         # Call with an alias
         result = provider.generate_content(
             prompt="test prompt",
-            model_name="llama",
+            model_name="copilot/grok-code",
             temperature=0.7,  # This is an alias
         )
 
@@ -173,7 +173,7 @@ class TestCustomProviderRegistration:
             {
                 "OPENROUTER_API_KEY": "test-openrouter-key",
                 "CUSTOM_API_PLACEHOLDER": "configured",
-                "OPENROUTER_ALLOWED_MODELS": "llama,anthropic/claude-opus-4.1",
+                "OPENROUTER_ALLOWED_MODELS": "llama,anthropic/claude-opus-4.6",
             },
             clear=True,
         ):

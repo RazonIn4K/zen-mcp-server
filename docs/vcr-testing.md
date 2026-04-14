@@ -1,6 +1,6 @@
 # HTTP Transport Recorder for Testing
 
-A custom HTTP recorder for testing expensive API calls (like o3-pro) with real responses.
+A custom HTTP recorder for testing expensive API calls (like gpt-5.4-pro) with real responses.
 
 ## Overview
 
@@ -20,7 +20,7 @@ def test_expensive_api_call(monkeypatch):
     inject_transport(monkeypatch, "tests/openai_cassettes/my_test.json")
     
     # Make API calls - automatically recorded/replayed with PII sanitization
-    result = await chat_tool.execute({"prompt": "2+2?", "model": "o3-pro"})
+    result = await chat_tool.execute({"prompt": "2+2?", "model": "gpt-5.4-pro"})
 ```
 
 ## How It Works
@@ -41,7 +41,7 @@ async def test_with_recording(monkeypatch):
     inject_transport(monkeypatch, "tests/openai_cassettes/my_test.json")
     
     # Use API normally - recording/replay happens transparently
-    result = await chat_tool.execute({"prompt": "2+2?", "model": "o3-pro"})
+    result = await chat_tool.execute({"prompt": "2+2?", "model": "gpt-5.4-pro"})
 ```
 
 For manual setup, see `test_o3_pro_output_text_fix.py`.

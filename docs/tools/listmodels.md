@@ -46,16 +46,16 @@ The tool displays:
 📋 Available Models by Provider
 
 🔹 Google (Gemini) - ✅ Configured
-  • pro (gemini-2.5-pro) - 1M context, thinking modes
-  • flash (gemini-2.0-flash-experimental) - 1M context, ultra-fast
+  • pro (gemini-3.1-pro-preview) - 1M context, thinking modes
+  • flashlite (gemini-3.1-flash-lite-preview) - 1M context, fast
 
 🔹 OpenAI - ✅ Configured  
-  • o3 (o3) - 200K context, strong reasoning
-  • o3-mini (o3-mini) - 200K context, balanced
-  • o4-mini (o4-mini) - 200K context, latest reasoning
+  • gpt (gpt-5.4-pro) - 400K context, strong reasoning
+  • gpt54 (gpt-5.4) - 1.05M context, long-context reasoning
+  • gpt54mini (gpt-5.4-mini) - 400K context, balanced
 
 🔹 Custom/Local - ✅ Configured
-  • local-llama (llama3.2) - 128K context, local inference
+  • copilot/gpt (gpt-5.4) - 1.05M context via Copilot proxy
   • Available at: http://localhost:11434/v1
 
 🔹 OpenRouter - ❌ Not configured

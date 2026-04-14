@@ -39,12 +39,12 @@ class TestListModelsRestrictions(unittest.TestCase):
             )
 
         opus_caps = make_capabilities(
-            "anthropic/claude-opus-4-20240229",
+            "anthropic/claude-opus-4.6-20250201",
             "Claude Opus",
             aliases=["opus"],
         )
         sonnet_caps = make_capabilities(
-            "anthropic/claude-sonnet-4-20240229",
+            "anthropic/claude-sonnet-4.6-20250201",
             "Claude Sonnet",
             aliases=["sonnet"],
         )
@@ -60,12 +60,12 @@ class TestListModelsRestrictions(unittest.TestCase):
         )
 
         self._openrouter_caps_map = {
-            "anthropic/claude-opus-4": opus_caps,
+            "anthropic/claude-opus-4.6": opus_caps,
             "opus": opus_caps,
-            "anthropic/claude-opus-4-20240229": opus_caps,
-            "anthropic/claude-sonnet-4": sonnet_caps,
+            "anthropic/claude-opus-4.6-20250201": opus_caps,
+            "anthropic/claude-sonnet-4.6": sonnet_caps,
             "sonnet": sonnet_caps,
-            "anthropic/claude-sonnet-4-20240229": sonnet_caps,
+            "anthropic/claude-sonnet-4.6-20250201": sonnet_caps,
             "deepseek/deepseek-r1-0528:free": deepseek_caps,
             "qwen/qwen3-235b-a22b-04-28:free": qwen_caps,
         }
@@ -107,8 +107,8 @@ class TestListModelsRestrictions(unittest.TestCase):
         # Set up mock to return only allowed models when restrictions are respected
         # Include both aliased models and full model names without aliases
         self.mock_openrouter.list_models.return_value = [
-            "anthropic/claude-opus-4",  # Has alias "opus"
-            "anthropic/claude-sonnet-4",  # Has alias "sonnet"
+            "anthropic/claude-opus-4.6",  # Has alias "opus"
+            "anthropic/claude-sonnet-4.6",  # Has alias "sonnet"
             "deepseek/deepseek-r1-0528:free",  # No alias, full name
             "qwen/qwen3-235b-a22b-04-28:free",  # No alias, full name
         ]
@@ -121,13 +121,13 @@ class TestListModelsRestrictions(unittest.TestCase):
         def resolve_side_effect(model_name):
             if "opus" in model_name.lower():
                 config = MagicMock()
-                config.model_name = "anthropic/claude-opus-4-20240229"
+                config.model_name = "anthropic/claude-opus-4.6-20250201"
                 config.context_window = 200000
                 config.get_effective_capability_rank.return_value = 90  # High rank for Opus
                 return config
             elif "sonnet" in model_name.lower():
                 config = MagicMock()
-                config.model_name = "anthropic/claude-sonnet-4-20240229"
+                config.model_name = "anthropic/claude-sonnet-4.6-20250201"
                 config.context_window = 200000
                 config.get_effective_capability_rank.return_value = 80  # Lower rank for Sonnet
                 return config
@@ -164,8 +164,8 @@ class TestListModelsRestrictions(unittest.TestCase):
         mock_get_models.return_value = {
             "gemini-2.5-flash": ProviderType.GOOGLE,
             "gemini-2.5-pro": ProviderType.GOOGLE,
-            "anthropic/claude-opus-4-20240229": ProviderType.OPENROUTER,
-            "anthropic/claude-sonnet-4-20240229": ProviderType.OPENROUTER,
+            "anthropic/claude-opus-4.6-20250201": ProviderType.OPENROUTER,
+            "anthropic/claude-sonnet-4.6-20250201": ProviderType.OPENROUTER,
             "deepseek/deepseek-r1-0528:free": ProviderType.OPENROUTER,
             "qwen/qwen3-235b-a22b-04-28:free": ProviderType.OPENROUTER,
         }

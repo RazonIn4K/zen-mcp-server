@@ -115,20 +115,20 @@ class OpenAIModelProvider(RegistryBackedProviderMixin, OpenAICompatibleProvider)
 
         if category == ToolModelCategory.EXTENDED_REASONING:
             # Prefer models with extended thinking support
-            # GPT-5-Codex first for coding tasks
-            preferred = find_first(["gpt-5-codex", "gpt-5-pro", "o3", "o3-pro", "gpt-5"])
+            # Prefer the highest-capability GPT-5.4 variant
+            preferred = find_first(["gpt-5.4-pro", "gpt-5.4", "gpt-5.3-codex"])
             return preferred if preferred else allowed_models[0]
 
         elif category == ToolModelCategory.FAST_RESPONSE:
             # Prefer fast, cost-efficient models
-            # GPT-5 models for speed, GPT-5-Codex after (premium pricing but cached)
-            preferred = find_first(["gpt-5", "gpt-5-mini", "gpt-5-codex", "o4-mini", "o3-mini"])
+            # Prefer GPT-5.4 mini for speed, fall back to GPT-5.4 if needed
+            preferred = find_first(["gpt-5.4-mini", "gpt-5.4", "gpt-5.4-pro"])
             return preferred if preferred else allowed_models[0]
 
         else:  # BALANCED or default
             # Prefer balanced performance/cost models
-            # Include GPT-5-Codex for coding workflows
-            preferred = find_first(["gpt-5", "gpt-5-codex", "gpt-5-pro", "gpt-5-mini", "o4-mini", "o3-mini"])
+            # Prefer GPT-5.4, fall back to GPT-5.4 Pro if needed
+            preferred = find_first(["gpt-5.4", "gpt-5.4-pro", "gpt-5.4-mini"])
             return preferred if preferred else allowed_models[0]
 
 

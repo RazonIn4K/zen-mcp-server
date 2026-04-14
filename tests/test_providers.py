@@ -179,36 +179,39 @@ class TestOpenAIProvider:
         """Test getting O3 model capabilities"""
         provider = OpenAIModelProvider(api_key="test-key")
 
-        capabilities = provider.get_capabilities("o3-mini")
+        capabilities = provider.get_capabilities("gpt-5.4-pro")
 
         assert capabilities.provider == ProviderType.OPENAI
-        assert capabilities.model_name == "o3-mini"
-        assert capabilities.context_window == 200_000
-        assert not capabilities.supports_extended_thinking
+        assert capabilities.model_name == "gpt-5.4-pro"
+        assert capabilities.context_window == 400_000
+        assert capabilities.supports_extended_thinking
+        assert not capabilities.supports_temperature
 
     def test_get_capabilities_o4_mini(self):
         """Test getting O4-mini model capabilities"""
         provider = OpenAIModelProvider(api_key="test-key")
 
-        capabilities = provider.get_capabilities("o4-mini")
+        capabilities = provider.get_capabilities("gpt-5.4")
 
         assert capabilities.provider == ProviderType.OPENAI
-        assert capabilities.model_name == "o4-mini"
-        assert capabilities.context_window == 200_000
-        assert not capabilities.supports_extended_thinking
-        # Check temperature constraint is fixed at 1.0
-        assert capabilities.temperature_constraint.value == 1.0
+        assert capabilities.model_name == "gpt-5.4"
+        assert capabilities.context_window == 1_050_000
+        assert capabilities.supports_extended_thinking
+        assert capabilities.supports_temperature
+        assert capabilities.temperature_constraint.min_temp == 0.0
+        assert capabilities.temperature_constraint.max_temp == 2.0
 
     def test_validate_model_names(self):
         """Test model name validation"""
         provider = OpenAIModelProvider(api_key="test-key")
 
-        assert provider.validate_model_name("o3")
-        assert provider.validate_model_name("o3mini")
-        assert provider.validate_model_name("o3-mini")  # Backwards compatibility
-        assert provider.validate_model_name("o4-mini")
-        assert provider.validate_model_name("o4mini")
-        assert provider.validate_model_name("o4-mini")
+        assert provider.validate_model_name("gpt")
+        assert provider.validate_model_name("gptpro")
+        assert provider.validate_model_name("gpt54pro")
+        assert provider.validate_model_name("gpt-5.4-pro")
+        assert provider.validate_model_name("gpt54")
+        assert provider.validate_model_name("gpt5.4")
+        assert provider.validate_model_name("gpt-5.4")
         assert not provider.validate_model_name("gpt-4o")
         assert not provider.validate_model_name("invalid-model")
 
@@ -216,6 +219,6 @@ class TestOpenAIProvider:
         """OpenAI catalogue exposes extended thinking capability via ModelCapabilities."""
         provider = OpenAIModelProvider(api_key="test-key")
 
-        aliases = ["o3", "o3mini", "o3-mini", "o4-mini", "o4mini"]
+        aliases = ["gpt", "gptpro", "gpt-5.4-pro", "gpt54", "gpt-5.4"]
         for alias in aliases:
-            assert not provider.get_capabilities(alias).supports_extended_thinking
+            assert provider.get_capabilities(alias).supports_extended_thinking

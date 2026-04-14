@@ -20,12 +20,12 @@ class TestModelRestrictionService:
             service = ModelRestrictionService()
 
             # Should allow all models
-            assert service.is_allowed(ProviderType.OPENAI, "o3")
-            assert service.is_allowed(ProviderType.OPENAI, "o3-mini")
+            assert service.is_allowed(ProviderType.OPENAI, "gpt-5.4-pro")
+            assert service.is_allowed(ProviderType.OPENAI, "gpt-5.4")
             assert service.is_allowed(ProviderType.GOOGLE, "gemini-2.5-pro")
             assert service.is_allowed(ProviderType.GOOGLE, "gemini-2.5-flash")
-            assert service.is_allowed(ProviderType.OPENROUTER, "anthropic/claude-opus-4")
-            assert service.is_allowed(ProviderType.OPENROUTER, "openai/o3")
+            assert service.is_allowed(ProviderType.OPENROUTER, "anthropic/claude-opus-4.6")
+            assert service.is_allowed(ProviderType.OPENROUTER, "openai/gpt-5.4")
 
             # Should have no restrictions
             assert not service.has_restrictions(ProviderType.OPENAI)
@@ -34,21 +34,23 @@ class TestModelRestrictionService:
 
     def test_load_single_model_restriction(self):
         """Test loading a single allowed model."""
-        with patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "o3-mini"}):
+        with patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "gpt-5.4"}):
             service = ModelRestrictionService()
 
-            # Should only allow o3-mini
-            assert service.is_allowed(ProviderType.OPENAI, "o3-mini")
-            assert not service.is_allowed(ProviderType.OPENAI, "o3")
-            assert not service.is_allowed(ProviderType.OPENAI, "o4-mini")
+            # Should only allow gpt-5.4
+            assert service.is_allowed(ProviderType.OPENAI, "gpt-5.4")
+            assert not service.is_allowed(ProviderType.OPENAI, "gpt-5.4-pro")
 
             # Google and OpenRouter should have no restrictions
             assert service.is_allowed(ProviderType.GOOGLE, "gemini-2.5-pro")
-            assert service.is_allowed(ProviderType.OPENROUTER, "anthropic/claude-opus-4")
+            assert service.is_allowed(ProviderType.OPENROUTER, "anthropic/claude-opus-4.6")
 
     def test_load_multiple_models_restriction(self):
         """Test loading multiple allowed models."""
-        with patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "o3-mini,o4-mini", "GOOGLE_ALLOWED_MODELS": "flash,pro"}):
+        with patch.dict(
+            os.environ,
+            {"OPENAI_ALLOWED_MODELS": "gpt-5.4-pro,gpt-5.4", "GOOGLE_ALLOWED_MODELS": "flash,pro"},
+        ):
             # Instantiate providers so alias resolution for allow-lists is available
             openai_provider = OpenAIModelProvider(api_key="test-key")
             gemini_provider = GeminiModelProvider(api_key="test-key")
@@ -63,29 +65,27 @@ class TestModelRestrictionService:
                 return mapping.get(provider_type)
 
             with patch.object(ModelProviderRegistry, "get_provider", side_effect=fake_get_provider):
-
                 service = ModelRestrictionService()
 
                 # Check OpenAI models
-                assert service.is_allowed(ProviderType.OPENAI, "o3-mini")
-                assert service.is_allowed(ProviderType.OPENAI, "o4-mini")
-                assert not service.is_allowed(ProviderType.OPENAI, "o3")
+                assert service.is_allowed(ProviderType.OPENAI, "gpt-5.4-pro")
+                assert service.is_allowed(ProviderType.OPENAI, "gpt-5.4")
 
                 # Check Google models
                 assert service.is_allowed(ProviderType.GOOGLE, "flash")
                 assert service.is_allowed(ProviderType.GOOGLE, "pro")
-                assert service.is_allowed(ProviderType.GOOGLE, "gemini-2.5-pro")
+                assert service.is_allowed(ProviderType.GOOGLE, "gemini-3.1-pro-preview")
 
     def test_case_insensitive_and_whitespace_handling(self):
         """Test that model names are case-insensitive and whitespace is trimmed."""
-        with patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": " O3-MINI , o4-Mini "}):
+        with patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": " GPT-5.4 , gpt-5.4-Pro "}):
             service = ModelRestrictionService()
 
             # Should work with any case
-            assert service.is_allowed(ProviderType.OPENAI, "o3-mini")
-            assert service.is_allowed(ProviderType.OPENAI, "O3-MINI")
-            assert service.is_allowed(ProviderType.OPENAI, "o4-mini")
-            assert service.is_allowed(ProviderType.OPENAI, "O4-Mini")
+            assert service.is_allowed(ProviderType.OPENAI, "gpt-5.4")
+            assert service.is_allowed(ProviderType.OPENAI, "GPT-5.4")
+            assert service.is_allowed(ProviderType.OPENAI, "gpt-5.4-pro")
+            assert service.is_allowed(ProviderType.OPENAI, "GPT-5.4-Pro")
 
     def test_empty_string_allows_all(self):
         """Test that empty string allows all models (same as unset)."""
@@ -93,40 +93,39 @@ class TestModelRestrictionService:
             service = ModelRestrictionService()
 
             # OpenAI should allow all models (empty string = no restrictions)
-            assert service.is_allowed(ProviderType.OPENAI, "o3")
-            assert service.is_allowed(ProviderType.OPENAI, "o3-mini")
-            assert service.is_allowed(ProviderType.OPENAI, "o4-mini")
+            assert service.is_allowed(ProviderType.OPENAI, "gpt-5.4-pro")
+            assert service.is_allowed(ProviderType.OPENAI, "gpt-5.4")
 
             # Google should only allow flash (and its resolved name)
             assert service.is_allowed(ProviderType.GOOGLE, "flash")
             assert service.is_allowed(ProviderType.GOOGLE, "gemini-2.5-flash", "flash")
             assert not service.is_allowed(ProviderType.GOOGLE, "pro")
-            assert not service.is_allowed(ProviderType.GOOGLE, "gemini-2.5-pro", "pro")
+            assert not service.is_allowed(ProviderType.GOOGLE, "gemini-3.1-pro-preview", "pro")
 
     def test_filter_models(self):
         """Test filtering a list of models based on restrictions."""
-        with patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "o3-mini,o4-mini"}):
+        with patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "gpt-5.4,gpt-5.4-pro"}):
             service = ModelRestrictionService()
 
-            models = ["o3", "o3-mini", "o4-mini", "o3-pro"]
+            models = ["gpt-5.4-pro", "gpt-5.4", "gpt"]
             filtered = service.filter_models(ProviderType.OPENAI, models)
 
-            assert filtered == ["o3-mini", "o4-mini"]
+            assert filtered == ["gpt-5.4-pro", "gpt-5.4"]
 
     def test_get_allowed_models(self):
         """Test getting the set of allowed models."""
-        with patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "o3-mini,o4-mini"}):
+        with patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "gpt-5.4,gpt-5.4-pro"}):
             service = ModelRestrictionService()
 
             allowed = service.get_allowed_models(ProviderType.OPENAI)
-            assert allowed == {"o3-mini", "o4-mini"}
+            assert allowed == {"gpt-5.4", "gpt-5.4-pro"}
 
             # No restrictions for Google
             assert service.get_allowed_models(ProviderType.GOOGLE) is None
 
     def test_shorthand_names_in_restrictions(self):
         """Test that shorthand names work in restrictions."""
-        with patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "o4mini,o3mini", "GOOGLE_ALLOWED_MODELS": "flash,pro"}):
+        with patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "gpt,gpt54", "GOOGLE_ALLOWED_MODELS": "flash,pro"}):
             # Instantiate providers so the registry can resolve aliases
             OpenAIModelProvider(api_key="test-key")
             GeminiModelProvider(api_key="test-key")
@@ -134,40 +133,39 @@ class TestModelRestrictionService:
             service = ModelRestrictionService()
 
             # When providers check models, they pass both resolved and original names
-            # OpenAI: 'o4mini' shorthand allows o4-mini
-            assert service.is_allowed(ProviderType.OPENAI, "o4-mini", "o4mini")  # How providers actually call it
-            assert service.is_allowed(ProviderType.OPENAI, "o4-mini")  # Canonical should also be allowed
+            # OpenAI: 'gpt' shorthand allows gpt-5.4-pro
+            assert service.is_allowed(ProviderType.OPENAI, "gpt-5.4-pro", "gpt")  # How providers actually call it
+            assert service.is_allowed(ProviderType.OPENAI, "gpt-5.4-pro")  # Canonical should also be allowed
 
-            # OpenAI: o3-mini allowed directly
-            assert service.is_allowed(ProviderType.OPENAI, "o3-mini")
-            assert not service.is_allowed(ProviderType.OPENAI, "o3")
+            # OpenAI: 'gpt54' shorthand allows gpt-5.4
+            assert service.is_allowed(ProviderType.OPENAI, "gpt-5.4", "gpt54")
+            assert service.is_allowed(ProviderType.OPENAI, "gpt-5.4")
 
             # Google should allow both models via shorthands
             assert service.is_allowed(ProviderType.GOOGLE, "gemini-2.5-flash", "flash")
-            assert service.is_allowed(ProviderType.GOOGLE, "gemini-2.5-pro", "pro")
+            assert service.is_allowed(ProviderType.GOOGLE, "gemini-3.1-pro-preview", "pro")
 
             # Also test that full names work when specified in restrictions
-            assert service.is_allowed(ProviderType.OPENAI, "o3-mini", "o3mini")  # Even with shorthand
+            assert service.is_allowed(ProviderType.OPENAI, "gpt-5.4", "gpt54")  # Even with shorthand
 
     def test_validation_against_known_models(self, caplog):
         """Test validation warnings for unknown models."""
-        with patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "o3-mini,o4-mimi"}):  # Note the typo: o4-mimi
+        with patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "gpt-5.4,gpt-5.4-pr0"}):  # Note the typo: gpt-5.4-pr0
             service = ModelRestrictionService()
 
             # Create mock provider with known models
             mock_provider = MagicMock()
             mock_provider.MODEL_CAPABILITIES = {
-                "o3": {"context_window": 200000},
-                "o3-mini": {"context_window": 200000},
-                "o4-mini": {"context_window": 200000},
+                "gpt-5.4-pro": {"context_window": 500000},
+                "gpt-5.4": {"context_window": 500000},
             }
-            mock_provider.list_models.return_value = ["o3", "o3-mini", "o4-mini"]
+            mock_provider.list_models.return_value = ["gpt-5.4-pro", "gpt-5.4"]
 
             provider_instances = {ProviderType.OPENAI: mock_provider}
             service.validate_against_known_models(provider_instances)
 
             # Should have logged a warning about the typo
-            assert "o4-mimi" in caplog.text
+            assert "gpt-5.4-pr0" in caplog.text
             assert "not a recognized" in caplog.text
 
     def test_openrouter_model_restrictions(self):
@@ -178,13 +176,15 @@ class TestModelRestrictionService:
             # Should only allow specified OpenRouter models
             assert service.is_allowed(ProviderType.OPENROUTER, "opus")
             assert service.is_allowed(ProviderType.OPENROUTER, "sonnet")
-            assert service.is_allowed(ProviderType.OPENROUTER, "anthropic/claude-opus-4", "opus")  # With original name
+            assert service.is_allowed(
+                ProviderType.OPENROUTER, "anthropic/claude-opus-4.6", "opus"
+            )  # With original name
             assert not service.is_allowed(ProviderType.OPENROUTER, "haiku")
-            assert not service.is_allowed(ProviderType.OPENROUTER, "anthropic/claude-3-haiku")
+            assert not service.is_allowed(ProviderType.OPENROUTER, "anthropic/claude-haiku-4.5")
             assert not service.is_allowed(ProviderType.OPENROUTER, "mistral-large")
 
             # Other providers should have no restrictions
-            assert service.is_allowed(ProviderType.OPENAI, "o3")
+            assert service.is_allowed(ProviderType.OPENAI, "gpt-5.4-pro")
             assert service.is_allowed(ProviderType.GOOGLE, "pro")
 
             # Should have restrictions for OpenRouter
@@ -207,7 +207,7 @@ class TestModelRestrictionService:
         with patch.dict(
             os.environ,
             {
-                "OPENAI_ALLOWED_MODELS": "o3-mini",
+                "OPENAI_ALLOWED_MODELS": "gpt-5.4-pro",
                 "GOOGLE_ALLOWED_MODELS": "flash",
                 "OPENROUTER_ALLOWED_MODELS": "opus,sonnet",
             },
@@ -215,8 +215,8 @@ class TestModelRestrictionService:
             service = ModelRestrictionService()
 
             # OpenAI restrictions
-            assert service.is_allowed(ProviderType.OPENAI, "o3-mini")
-            assert not service.is_allowed(ProviderType.OPENAI, "o3")
+            assert service.is_allowed(ProviderType.OPENAI, "gpt-5.4-pro")
+            assert not service.is_allowed(ProviderType.OPENAI, "gpt-5.4")
 
             # Google restrictions
             assert service.is_allowed(ProviderType.GOOGLE, "flash")
@@ -236,7 +236,7 @@ class TestModelRestrictionService:
 class TestProviderIntegration:
     """Test integration with actual providers."""
 
-    @patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "o3-mini"})
+    @patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "gpt-5.4"})
     def test_openai_provider_respects_restrictions(self):
         """Test that OpenAI provider respects restrictions."""
         # Clear any cached restriction service
@@ -247,14 +247,14 @@ class TestProviderIntegration:
         provider = OpenAIModelProvider(api_key="test-key")
 
         # Should validate allowed model
-        assert provider.validate_model_name("o3-mini")
+        assert provider.validate_model_name("gpt-5.4")
 
         # Should not validate disallowed model
-        assert not provider.validate_model_name("o3")
+        assert not provider.validate_model_name("gpt-5.4-pro")
 
         # get_capabilities should raise for disallowed model
         with pytest.raises(ValueError) as exc_info:
-            provider.get_capabilities("o3")
+            provider.get_capabilities("gpt-5.4-pro")
         assert "not allowed by restriction policy" in str(exc_info.value)
 
     @patch.dict(os.environ, {"GOOGLE_ALLOWED_MODELS": "gemini-2.5-flash,flash"})
@@ -273,7 +273,7 @@ class TestProviderIntegration:
 
         # Should not validate disallowed model
         assert not provider.validate_model_name("pro")
-        assert not provider.validate_model_name("gemini-2.5-pro")
+        assert not provider.validate_model_name("gemini-3.1-pro-preview")
 
         # get_capabilities should raise for disallowed model
         with pytest.raises(ValueError) as exc_info:
@@ -302,7 +302,6 @@ class TestProviderIntegration:
         from providers.registry import ModelProviderRegistry
 
         with patch.object(ModelProviderRegistry, "get_provider", return_value=provider):
-
             # Test case: Only alias "flash" is allowed, not the full name
             # If parameters are in wrong order, this test will catch it
 
@@ -317,7 +316,7 @@ class TestProviderIntegration:
             assert provider.validate_model_name("gemini-2.5-flash")
             # Unrelated models remain blocked
             assert not provider.validate_model_name("pro")
-            assert not provider.validate_model_name("gemini-2.5-pro")
+            assert not provider.validate_model_name("gemini-3.1-pro-preview")
 
     @patch.dict(os.environ, {"GOOGLE_ALLOWED_MODELS": "gemini-2.5-flash"})
     def test_gemini_parameter_order_edge_case_full_name_only(self):
@@ -343,13 +342,16 @@ class TestProviderIntegration:
 
         # Should not allow "pro" alias
         assert not provider.validate_model_name("pro")
-        assert not provider.validate_model_name("gemini-2.5-pro")
+        assert not provider.validate_model_name("gemini-3.1-pro-preview")
 
 
 class TestCustomProviderOpenRouterRestrictions:
     """Test custom provider integration with OpenRouter restrictions."""
 
-    @patch.dict(os.environ, {"OPENROUTER_ALLOWED_MODELS": "opus,sonnet", "OPENROUTER_API_KEY": "test-key"})
+    @patch.dict(
+        os.environ,
+        {"OPENROUTER_ALLOWED_MODELS": "opus,sonnet", "OPENROUTER_API_KEY": "test-key", "CUSTOM_ALLOWED_MODELS": ""},
+    )
     def test_custom_provider_respects_openrouter_restrictions(self):
         """Test that custom provider correctly defers OpenRouter models to OpenRouter provider."""
         # Clear any cached restriction service
@@ -367,9 +369,12 @@ class TestCustomProviderOpenRouterRestrictions:
         assert not provider.validate_model_name("haiku")
 
         # Should still validate custom models defined in conf/custom_models.json
-        assert provider.validate_model_name("local-llama")
+        assert provider.validate_model_name("gpt-5.4")
 
-    @patch.dict(os.environ, {"OPENROUTER_ALLOWED_MODELS": "opus", "OPENROUTER_API_KEY": "test-key"})
+    @patch.dict(
+        os.environ,
+        {"OPENROUTER_ALLOWED_MODELS": "opus", "OPENROUTER_API_KEY": "test-key", "CUSTOM_ALLOWED_MODELS": ""},
+    )
     def test_custom_provider_openrouter_capabilities_restrictions(self):
         """Test that custom provider's get_capabilities correctly handles OpenRouter models."""
         # Clear any cached restriction service
@@ -390,10 +395,10 @@ class TestCustomProviderOpenRouterRestrictions:
             provider.get_capabilities("haiku")
 
         # Should still work for custom models
-        capabilities = provider.get_capabilities("local-llama")
+        capabilities = provider.get_capabilities("gpt-5.4")
         assert capabilities.provider == ProviderType.CUSTOM
 
-    @patch.dict(os.environ, {"OPENROUTER_ALLOWED_MODELS": "opus"}, clear=False)
+    @patch.dict(os.environ, {"OPENROUTER_ALLOWED_MODELS": "opus", "CUSTOM_ALLOWED_MODELS": ""}, clear=False)
     def test_custom_provider_no_openrouter_key_ignores_restrictions(self):
         """Test that when OpenRouter key is not set, cloud models are rejected regardless of restrictions."""
         # Make sure OPENROUTER_API_KEY is not set
@@ -413,9 +418,12 @@ class TestCustomProviderOpenRouterRestrictions:
         assert not provider.validate_model_name("haiku")
 
         # Should still validate custom models
-        assert provider.validate_model_name("local-llama")
+        assert provider.validate_model_name("gpt-5.4")
 
-    @patch.dict(os.environ, {"OPENROUTER_ALLOWED_MODELS": "", "OPENROUTER_API_KEY": "test-key"})
+    @patch.dict(
+        os.environ,
+        {"OPENROUTER_ALLOWED_MODELS": "", "OPENROUTER_API_KEY": "test-key", "CUSTOM_ALLOWED_MODELS": ""},
+    )
     def test_custom_provider_empty_restrictions_allows_all_openrouter(self):
         """Test that custom provider correctly defers OpenRouter models regardless of restrictions."""
         # Clear any cached restriction service
@@ -436,7 +444,7 @@ class TestCustomProviderOpenRouterRestrictions:
 class TestRegistryIntegration:
     """Test integration with ModelProviderRegistry."""
 
-    @patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "mini", "GOOGLE_ALLOWED_MODELS": "flash"})
+    @patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "gpt", "GOOGLE_ALLOWED_MODELS": "flash"})
     def test_registry_with_shorthand_restrictions(self):
         """Test that registry handles shorthand restrictions correctly."""
         # Clear cached restriction service
@@ -454,7 +462,7 @@ class TestRegistryIntegration:
         ModelProviderRegistry.get_available_models(respect_restrictions=True)
 
         # Currently, this will be empty because get_available_models doesn't
-        # recognize that "mini" allows "o4-mini"
+        # recognize that "gpt" allows "gpt-5.4-pro"
         # This is a known limitation that should be documented
 
     @patch("providers.registry.ModelProviderRegistry.get_provider")
@@ -465,8 +473,8 @@ class TestRegistryIntegration:
         # Mock providers
         mock_openai = MagicMock()
         mock_openai.MODEL_CAPABILITIES = {
-            "o3": {"context_window": 200000},
-            "o3-mini": {"context_window": 200000},
+            "gpt-5.4-pro": {"context_window": 500000},
+            "gpt-5.4": {"context_window": 500000},
         }
         mock_openai.get_provider_type.return_value = ProviderType.OPENAI
 
@@ -507,9 +515,16 @@ class TestRegistryIntegration:
 
         mock_openai.list_models = MagicMock(side_effect=openai_list_models)
 
+        def openai_get_capabilities(model_name: str):
+            from types import SimpleNamespace
+
+            return SimpleNamespace(model_name=model_name)
+
+        mock_openai.get_capabilities = MagicMock(side_effect=openai_get_capabilities)
+
         mock_gemini = MagicMock()
         mock_gemini.MODEL_CAPABILITIES = {
-            "gemini-2.5-pro": {"context_window": 1048576},
+            "gemini-3.1-pro-preview": {"context_window": 1048576},
             "gemini-2.5-flash": {"context_window": 1048576},
         }
         mock_gemini.get_provider_type.return_value = ProviderType.GOOGLE
@@ -567,7 +582,10 @@ class TestRegistryIntegration:
             ProviderType.GOOGLE: type(mock_gemini),
         }
 
-        with patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "o3-mini", "GOOGLE_ALLOWED_MODELS": "gemini-2.5-flash"}):
+        with patch.dict(
+            os.environ,
+            {"OPENAI_ALLOWED_MODELS": "gpt-5.4", "GOOGLE_ALLOWED_MODELS": "gemini-2.5-flash"},
+        ):
             # Clear cached restriction service
             import utils.model_restrictions
 
@@ -576,16 +594,16 @@ class TestRegistryIntegration:
             available = ModelProviderRegistry.get_available_models(respect_restrictions=True)
 
             # Should only include allowed models
-            assert "o3-mini" in available
-            assert "o3" not in available
+            assert "gpt-5.4" in available
+            assert "gpt-5.4-pro" not in available
             assert "gemini-2.5-flash" in available
-            assert "gemini-2.5-pro" not in available
+            assert "gemini-3.1-pro-preview" not in available
 
 
 class TestShorthandRestrictions:
     """Test that shorthand model names work correctly in restrictions."""
 
-    @patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "mini", "GOOGLE_ALLOWED_MODELS": "flash"})
+    @patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "gpt", "GOOGLE_ALLOWED_MODELS": "flash"})
     def test_providers_validate_shorthands_correctly(self):
         """Test that providers correctly validate shorthand names."""
         # Clear cached restriction service
@@ -607,17 +625,16 @@ class TestShorthandRestrictions:
             return mapping.get(provider_type)
 
         with patch.object(ModelProviderRegistry, "get_provider", side_effect=registry_side_effect):
-            assert openai_provider.validate_model_name("mini")  # Should work with shorthand
-            assert openai_provider.validate_model_name("gpt-5-mini")  # Canonical resolved from shorthand
-            assert not openai_provider.validate_model_name("o4-mini")  # Unrelated model still blocked
-            assert not openai_provider.validate_model_name("o3-mini")
+            assert openai_provider.validate_model_name("gpt")  # Should work with shorthand
+            assert openai_provider.validate_model_name("gpt-5.4-pro")  # Canonical resolved from shorthand
+            assert not openai_provider.validate_model_name("gpt-5.4")  # Unrelated model still blocked
 
             # Test Gemini provider
             assert gemini_provider.validate_model_name("flash")  # Should work with shorthand
             assert gemini_provider.validate_model_name("gemini-2.5-flash")  # Canonical allowed
             assert not gemini_provider.validate_model_name("pro")  # Not allowed
 
-    @patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "o3mini,mini,o4-mini"})
+    @patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "gpt54,gpt"})
     def test_multiple_shorthands_for_same_model(self):
         """Test that multiple shorthands work correctly."""
         # Clear cached restriction service
@@ -628,20 +645,20 @@ class TestShorthandRestrictions:
         openai_provider = OpenAIModelProvider(api_key="test-key")
 
         # Both shorthands should work
-        assert openai_provider.validate_model_name("mini")  # mini -> o4-mini
-        assert openai_provider.validate_model_name("o3mini")  # o3mini -> o3-mini
+        assert openai_provider.validate_model_name("gpt")  # gpt -> gpt-5.4-pro
+        assert openai_provider.validate_model_name("gpt54")  # gpt54 -> gpt-5.4
 
         # Resolved names should be allowed when their shorthands are present
-        assert openai_provider.validate_model_name("o4-mini")  # Explicitly allowed
-        assert openai_provider.validate_model_name("o3-mini")  # Allowed via shorthand
+        assert openai_provider.validate_model_name("gpt-5.4-pro")  # Allowed via shorthand
+        assert openai_provider.validate_model_name("gpt-5.4")  # Allowed via shorthand
 
         # Other models should not work
-        assert not openai_provider.validate_model_name("o3")
-        assert not openai_provider.validate_model_name("o3-pro")
+        assert not openai_provider.validate_model_name("gpt-4")
+        assert not openai_provider.validate_model_name("gpt-5")
 
     @patch.dict(
         os.environ,
-        {"OPENAI_ALLOWED_MODELS": "mini,o4-mini", "GOOGLE_ALLOWED_MODELS": "flash,gemini-2.5-flash"},
+        {"OPENAI_ALLOWED_MODELS": "gpt,gpt-5.4-pro", "GOOGLE_ALLOWED_MODELS": "flash,gemini-2.5-flash"},
     )
     def test_both_shorthand_and_full_name_allowed(self):
         """Test that we can allow both shorthand and full names."""
@@ -650,10 +667,10 @@ class TestShorthandRestrictions:
 
         utils.model_restrictions._restriction_service = None
 
-        # OpenAI - both mini and o4-mini are allowed
+        # OpenAI - both gpt and gpt-5.4-pro are allowed
         openai_provider = OpenAIModelProvider(api_key="test-key")
-        assert openai_provider.validate_model_name("mini")
-        assert openai_provider.validate_model_name("o4-mini")
+        assert openai_provider.validate_model_name("gpt")
+        assert openai_provider.validate_model_name("gpt-5.4-pro")
 
         # Gemini - both flash and full name are allowed
         gemini_provider = GeminiModelProvider(api_key="test-key")
@@ -673,9 +690,8 @@ class TestAutoModeWithRestrictions:
         # Mock providers
         mock_openai = MagicMock()
         mock_openai.MODEL_CAPABILITIES = {
-            "o3": {"context_window": 200000},
-            "o3-mini": {"context_window": 200000},
-            "o4-mini": {"context_window": 200000},
+            "gpt-5.4-pro": {"context_window": 500000},
+            "gpt-5.4": {"context_window": 500000},
         }
         mock_openai.get_provider_type.return_value = ProviderType.OPENAI
 
@@ -716,6 +732,13 @@ class TestAutoModeWithRestrictions:
 
         mock_openai.list_models = MagicMock(side_effect=openai_list_models)
 
+        def openai_get_capabilities(model_name: str):
+            from types import SimpleNamespace
+
+            return SimpleNamespace(model_name=model_name)
+
+        mock_openai.get_capabilities = MagicMock(side_effect=openai_get_capabilities)
+
         # Add get_preferred_model method to mock to match new implementation
         def get_preferred_model(category, allowed_models):
             # Simple preference logic for testing - just return first allowed model
@@ -734,20 +757,20 @@ class TestAutoModeWithRestrictions:
         registry = ModelProviderRegistry()
         registry._providers = {ProviderType.OPENAI: type(mock_openai)}
 
-        with patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "o4-mini"}):
+        with patch.dict(os.environ, {"OPENAI_ALLOWED_MODELS": "gpt-5.4"}):
             # Clear cached restriction service
             import utils.model_restrictions
 
             utils.model_restrictions._restriction_service = None
 
-            # Should pick o4-mini instead of o3-mini for fast response
+            # Should pick gpt-5.4 when it is the only allowed OpenAI model
             model = ModelProviderRegistry.get_preferred_fallback_model(ToolModelCategory.FAST_RESPONSE)
-            assert model == "o4-mini"
+            assert model == "gpt-5.4"
 
     def test_fallback_with_shorthand_restrictions(self, monkeypatch):
         """Test fallback model selection with shorthand restrictions."""
         # Use monkeypatch to set environment variables with automatic cleanup
-        monkeypatch.setenv("OPENAI_ALLOWED_MODELS", "mini")
+        monkeypatch.setenv("OPENAI_ALLOWED_MODELS", "gpt54")
         monkeypatch.setenv("GEMINI_API_KEY", "")
         monkeypatch.setenv("OPENAI_API_KEY", "test-key")
 
@@ -772,14 +795,13 @@ class TestAutoModeWithRestrictions:
             ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
             ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
 
-            # Even with "mini" restriction, fallback should work if provider handles it correctly
+            # Even with a shorthand restriction, fallback should work if provider handles it correctly
             # This tests the real-world scenario
             model = ModelProviderRegistry.get_preferred_fallback_model(ToolModelCategory.FAST_RESPONSE)
 
             # The fallback will depend on how get_available_models handles aliases
-            # When "mini" is allowed, it's returned as the allowed model
-            # "mini" is now an alias for gpt-5-mini, but the list shows "mini" itself
-            assert model in ["mini", "gpt-5-mini", "o4-mini", "gemini-2.5-flash"]
+            # When "gpt54" is allowed, it resolves to gpt-5.4 for selection.
+            assert model == "gpt-5.4"
         finally:
             # Restore original registry state
             registry = ModelProviderRegistry()

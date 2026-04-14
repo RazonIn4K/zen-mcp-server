@@ -25,7 +25,7 @@ You need at least one API key. Choose based on your needs:
 **Gemini (Google):**
 - Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
 - Generate an API key
-- **Note**: For Gemini 2.5 Pro, use a paid API key (free tier has limited access)
+- **Note**: For Gemini 3.1 Pro, use a paid API key (free tier has limited access)
 
 **OpenAI:**
 - Visit [OpenAI Platform](https://platform.openai.com/api-keys)
@@ -49,8 +49,8 @@ curl -fsSL https://ollama.ai/install.sh | sh
 # Start Ollama service
 ollama serve
 
-# Pull a model (e.g., Llama 3.2)
-ollama pull llama3.2
+# Pull a local model
+ollama pull <model-name>
 ```
 
 **Other local options:**
@@ -314,8 +314,8 @@ nano .env
 Add your API keys (at least one required):
 ```env
 # Choose your providers (at least one required)
-GEMINI_API_KEY=your-gemini-api-key-here      # For Gemini models  
-OPENAI_API_KEY=your-openai-api-key-here      # For O3, GPT-5
+GEMINI_API_KEY=your-gemini-api-key-here      # For Gemini models
+OPENAI_API_KEY=your-openai-api-key-here      # For GPT-5.4 and GPT-5.3-Codex
 XAI_API_KEY=your-xai-api-key-here            # For Grok models
 OPENROUTER_API_KEY=your-openrouter-key       # For multiple models
 
@@ -323,12 +323,12 @@ OPENROUTER_API_KEY=your-openrouter-key       # For multiple models
 DIAL_API_KEY=your-dial-api-key-here
 DIAL_API_HOST=https://core.dialx.ai          # Default host (optional)
 DIAL_API_VERSION=2024-12-01-preview          # API version (optional) 
-DIAL_ALLOWED_MODELS=o3,gemini-2.5-pro       # Restrict models (optional)
+DIAL_ALLOWED_MODELS=sonnet-4.1,opus-4.1          # Restrict DIAL deployment aliases (optional)
 
 # Custom/Local models (Ollama, vLLM, etc.)
 CUSTOM_API_URL=http://localhost:11434/v1     # Ollama example
 CUSTOM_API_KEY=                              # Empty for Ollama
-CUSTOM_MODEL_NAME=llama3.2                   # Default model name
+CUSTOM_MODEL_NAME=model-name                  # Default model name
 ```
 
 ## Prevent Client Timeouts
@@ -422,7 +422,7 @@ Versions 0.2.1 and newer currently ignore values above ~60 seconds for some tran
 "Use zen to list available models"
 "Chat with zen about the best approach for API design"
 "Use zen thinkdeep with gemini pro about scaling strategies"  
-"Debug this error with o3: [paste error]"
+"Debug this error with gpt: [paste error]"
 ```
 
 **Note**: Codex CLI provides excellent MCP integration with automatic environment variable configuration when using the setup script.
@@ -441,15 +441,15 @@ Versions 0.2.1 and newer currently ignore values above ~60 seconds for some tran
 **Specify the model:**
 ```  
 "Use zen with gemini pro to review this complex algorithm"
-"Debug with o3 using zen for logical analysis"
-"Get flash to quickly format this code via zen"
+"Debug with gpt using zen for logical analysis"
+"Get flashlite to quickly format this code via zen"
 ```
 
 **Multi-model workflows:**
 ```
-"Use zen to get consensus from pro and o3 on this architecture"
-"Code review with gemini, then precommit validation with o3"  
-"Analyze with flash, then deep dive with pro if issues found"
+"Use zen to get consensus from pro and gpt on this architecture"
+"Code review with gemini, then precommit validation with gpt"
+"Analyze with flashlite, then deep dive with pro if issues found"
 ```
 
 ### Quick Tool Reference:
@@ -525,15 +525,15 @@ Versions 0.2.1 and newer currently ignore values above ~60 seconds for some tran
 DEFAULT_MODEL=auto
 GEMINI_API_KEY=your-key
 OPENAI_API_KEY=your-key
-GOOGLE_ALLOWED_MODELS=flash,pro
-OPENAI_ALLOWED_MODELS=o4-mini,o3-mini
+GOOGLE_ALLOWED_MODELS=flashlite,pro
+OPENAI_ALLOWED_MODELS=gpt54,gpt54mini
 ```
 
 ### Cost-Optimized Setup
 ```env  
-DEFAULT_MODEL=flash
+DEFAULT_MODEL=flashlite
 GEMINI_API_KEY=your-key
-GOOGLE_ALLOWED_MODELS=flash
+GOOGLE_ALLOWED_MODELS=flashlite
 ```
 
 ### High-Performance Setup  
@@ -542,14 +542,14 @@ DEFAULT_MODEL=auto
 GEMINI_API_KEY=your-key
 OPENAI_API_KEY=your-key
 GOOGLE_ALLOWED_MODELS=pro
-OPENAI_ALLOWED_MODELS=o3
+OPENAI_ALLOWED_MODELS=gpt
 ```
 
 ### Local-First Setup
 ```env
 DEFAULT_MODEL=auto
 CUSTOM_API_URL=http://localhost:11434/v1
-CUSTOM_MODEL_NAME=llama3.2
+CUSTOM_MODEL_NAME=<model-name>
 # Add cloud APIs as backup
 GEMINI_API_KEY=your-key
 ```

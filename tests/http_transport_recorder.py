@@ -329,8 +329,13 @@ class ReplayTransport(httpx.MockTransport):
 
     def _is_o3_model_request(self, content_dict: dict) -> bool:
         """Check if this is an o3 model request."""
-        model = content_dict.get("model", "")
-        return model.startswith("o3")
+        model = content_dict.get("model") or ""
+        model_lower = str(model).lower()
+        return (
+            model_lower.startswith("o3")
+            or model_lower.startswith("gpt-5")
+            or model_lower.startswith("openai/gpt-5")
+        )
 
     def _extract_semantic_fields(self, content_dict: dict) -> dict:
         """Extract only semantic fields for matching, ignoring volatile prompts.
@@ -368,6 +373,33 @@ class ReplayTransport(httpx.MockTransport):
                             semantic["user_question"] = user_question
                     else:
                         semantic["user_question"] = last_text
+
+        # Chat completions payloads use `messages` instead of `input`
+        if "user_question" not in semantic:
+            messages = content_dict.get("messages", [])
+            if isinstance(messages, list) and messages:
+                for msg in reversed(messages):
+                    if not isinstance(msg, dict) or msg.get("role") != "user":
+                        continue
+
+                    content = msg.get("content", "")
+                    if isinstance(content, list):
+                        extracted_text = ""
+                        for item in reversed(content):
+                            if isinstance(item, dict) and item.get("type") == "text" and item.get("text"):
+                                extracted_text = item.get("text", "")
+                                break
+                        last_text = extracted_text
+                    else:
+                        last_text = content if isinstance(content, str) else str(content)
+
+                    if "=== USER REQUEST ===" in last_text:
+                        parts = last_text.split("=== USER REQUEST ===")
+                        if len(parts) > 1:
+                            semantic["user_question"] = parts[1].split("=== END REQUEST ===")[0].strip()
+                    else:
+                        semantic["user_question"] = last_text
+                    break
 
         return semantic
 

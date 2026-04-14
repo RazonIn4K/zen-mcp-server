@@ -63,7 +63,7 @@ class TestModelMetadataContinuation:
         """Test that reconstruct_thread_context preserves model from previous turn."""
         # Create thread with assistant turn
         thread_id = create_thread("chat", {"prompt": "initial"})
-        add_turn(thread_id, "assistant", "Initial response", model_name="o3-mini", model_provider="openai")
+        add_turn(thread_id, "assistant", "Initial response", model_name="gpt-5.4", model_provider="openai")
 
         # Test reconstruction without specifying model
         arguments = {"continuation_id": thread_id, "prompt": "follow-up question"}
@@ -84,7 +84,7 @@ class TestModelMetadataContinuation:
                 enhanced_args = await reconstruct_thread_context(arguments)
 
                 # Verify model was retrieved from thread
-                assert enhanced_args.get("model") == "o3-mini"
+                assert enhanced_args.get("model") == "gpt-5.4"
 
     @pytest.mark.asyncio
     async def test_multiple_turns_uses_last_assistant_model(self):
@@ -94,7 +94,7 @@ class TestModelMetadataContinuation:
         # Add multiple turns with different models
         add_turn(thread_id, "assistant", "First response", model_name="gemini-2.5-flash", model_provider="google")
         add_turn(thread_id, "user", "Another question")
-        add_turn(thread_id, "assistant", "Second response", model_name="o3", model_provider="openai")
+        add_turn(thread_id, "assistant", "Second response", model_name="gpt-5.4-pro", model_provider="openai")
         add_turn(thread_id, "user", "Final question")
 
         arguments = {"continuation_id": thread_id}
@@ -116,7 +116,7 @@ class TestModelMetadataContinuation:
                 enhanced_args = await reconstruct_thread_context(arguments)
 
                 # Should use the most recent assistant model
-                assert enhanced_args.get("model") == "o3"
+                assert enhanced_args.get("model") == "gpt-5.4-pro"
 
     @pytest.mark.asyncio
     async def test_no_previous_assistant_turn_defaults(self):
@@ -181,7 +181,7 @@ class TestModelMetadataContinuation:
         thread_id = create_thread("chat", {"prompt": "test"})
         add_turn(thread_id, "assistant", "Response", model_name="gemini-2.5-flash", model_provider="google")
 
-        arguments = {"continuation_id": thread_id, "model": "o3"}  # Explicitly specified
+        arguments = {"continuation_id": thread_id, "model": "gpt-5.4-pro"}  # Explicitly specified
 
         # Mock dependencies
         with patch("utils.model_context.ModelContext.calculate_token_allocation") as mock_calc:
@@ -200,7 +200,7 @@ class TestModelMetadataContinuation:
                 enhanced_args = await reconstruct_thread_context(arguments)
 
                 # Should keep the explicit model
-                assert enhanced_args.get("model") == "o3"
+                assert enhanced_args.get("model") == "gpt-5.4-pro"
 
     @pytest.mark.asyncio
     async def test_thread_chain_model_preservation(self):

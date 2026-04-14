@@ -54,7 +54,7 @@ class TestChatTool:
             "prompt": "Test prompt",
             "files": ["test.txt"],
             "images": ["test.png"],
-            "model": "anthropic/claude-opus-4.1",
+            "model": "anthropic/claude-opus-4.6",
             "temperature": 0.7,
             "working_directory": "/tmp",  # Dummy absolute path
         }
@@ -63,7 +63,7 @@ class TestChatTool:
         assert request.prompt == "Test prompt"
         assert request.files == ["test.txt"]
         assert request.images == ["test.png"]
-        assert request.model == "anthropic/claude-opus-4.1"
+        assert request.model == "anthropic/claude-opus-4.6"
         assert request.temperature == 0.7
         assert request.working_directory == "/tmp"
 
@@ -73,7 +73,7 @@ class TestChatTool:
         from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
-            ChatRequest(model="anthropic/claude-opus-4.1", working_directory="/tmp")
+            ChatRequest(model="anthropic/claude-opus-4.6", working_directory="/tmp")
 
     def test_model_availability(self):
         """Test that model availability works"""

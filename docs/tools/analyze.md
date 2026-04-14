@@ -65,7 +65,7 @@ This workflow ensures methodical analysis before expert insights, resulting in d
 
 **Initial Configuration (used in step 1):**
 - `prompt`: What to analyze or look for (required)
-- `model`: auto|pro|flash|flash-2.0|flashlite|o3|o3-mini|o4-mini|gpt4.1|gpt5|gpt5-mini|gpt5-nano (default: server default)
+- `model`: auto|gpt|gpt54|gpt54mini|gpt54nano|codex|pro|flashlite|flash|grok (default: server default)
 - `analysis_type`: architecture|performance|security|quality|general (default: general)
 - `output_format`: summary|detailed|actionable (default: detailed)
 - `temperature`: Temperature for analysis (0-1, default 0.2)
@@ -119,7 +119,7 @@ This workflow ensures methodical analysis before expert insights, resulting in d
 
 **Performance-Focused Analysis:**
 ```
-"Analyze backend/api/ for performance bottlenecks with o3, focus on database queries"
+"Analyze backend/api/ for performance bottlenecks with gpt, focus on database queries"
 ```
 
 **Security Assessment:**

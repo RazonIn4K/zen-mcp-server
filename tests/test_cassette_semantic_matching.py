@@ -29,7 +29,7 @@ class TestCassetteSemanticMatching:
 
         # Two requests with same user question but different system prompts
         request1_body = {
-            "model": "o3-pro",
+            "model": "gpt-5.4-pro",
             "reasoning": {"effort": "medium"},
             "input": [
                 {
@@ -45,7 +45,7 @@ class TestCassetteSemanticMatching:
         }
 
         request2_body = {
-            "model": "o3-pro",
+            "model": "gpt-5.4-pro",
             "reasoning": {"effort": "medium"},
             "input": [
                 {
@@ -66,7 +66,7 @@ class TestCassetteSemanticMatching:
 
         assert semantic1 == semantic2, "Semantic fields should match despite different prompts"
         assert semantic1["user_question"] == "What is 2 + 2?"
-        assert semantic1["model"] == "o3-pro"
+        assert semantic1["model"] == "gpt-5.4-pro"
         assert semantic1["reasoning"] == {"effort": "medium"}
 
         # Generate signatures - should be identical
@@ -94,7 +94,7 @@ class TestCassetteSemanticMatching:
         transport = ReplayTransport(str(dummy_cassette))
 
         request_body = {
-            "model": "o3-mini",
+            "model": "gpt-5.4",
             "reasoning": {"effort": "low"},
             "input": [
                 {
@@ -108,7 +108,7 @@ class TestCassetteSemanticMatching:
 
         assert transport._is_o3_model_request(request_body)
         semantic = transport._extract_semantic_fields(request_body)
-        assert semantic["model"] == "o3-mini"
+        assert semantic["model"] == "gpt-5.4"
         assert semantic["user_question"] == "Test"
 
     def test_o3_without_request_markers(self, dummy_cassette):
@@ -116,7 +116,7 @@ class TestCassetteSemanticMatching:
         transport = ReplayTransport(str(dummy_cassette))
 
         request_body = {
-            "model": "o3-pro",
+            "model": "gpt-5.4-pro",
             "reasoning": {"effort": "medium"},
             "input": [{"role": "user", "content": [{"type": "input_text", "text": "Just a simple question"}]}],
         }

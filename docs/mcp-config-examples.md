@@ -21,7 +21,7 @@ All snippets below assume you cloned Zen into `~/mcp-servers-official/zen-mcp-se
       "env": {
         "CUSTOM_API_URL": "http://localhost:4141/v1",
         "CUSTOM_API_KEY": "copilot-proxy",
-        "CUSTOM_ALLOWED_MODELS": "copilot/claude-sonnet-4.5,copilot/claude-haiku-4.5,copilot/gpt-5,copilot/gpt-5-codex,copilot/gpt-5-mini,copilot/o4-mini,copilot/gemini-2-5-pro,copilot/grok-code-fast-1",
+        "CUSTOM_ALLOWED_MODELS": "copilot/claude-opus-4.6,copilot/claude-sonnet-4.6,copilot/claude-haiku-4.5,copilot/gemini-3.1-pro-preview,copilot/gemini-3-flash-preview,copilot/gpt-5.4,copilot/gpt-5.4-mini,copilot/gpt-5.3-codex,copilot/grok-code-fast-1,copilot/minimax-m2.5,copilot/goldeneye-free-auto,copilot/oswe-vscode-prime,copilot/oswe-vscode-secondary,copilot/search-agent-a,copilot/search-agent-b,copilot/search-agent-c",
         "DEFAULT_MODEL": "auto",
         "LOG_LEVEL": "INFO"
       }
@@ -44,7 +44,7 @@ All snippets below assume you cloned Zen into `~/mcp-servers-official/zen-mcp-se
       "env": {
         "CUSTOM_API_URL": "http://localhost:4141/v1",
         "CUSTOM_API_KEY": "copilot-proxy",
-        "CUSTOM_ALLOWED_MODELS": "copilot/claude-sonnet-4.5,copilot/claude-haiku-4.5,copilot/gpt-5,copilot/gpt-5-codex,copilot/gpt-5-mini,copilot/o4-mini,copilot/gemini-2-5-pro,copilot/grok-code-fast-1",
+        "CUSTOM_ALLOWED_MODELS": "copilot/claude-opus-4.6,copilot/claude-sonnet-4.6,copilot/claude-haiku-4.5,copilot/gemini-3.1-pro-preview,copilot/gemini-3-flash-preview,copilot/gpt-5.4,copilot/gpt-5.4-mini,copilot/gpt-5.3-codex,copilot/grok-code-fast-1,copilot/minimax-m2.5,copilot/goldeneye-free-auto,copilot/oswe-vscode-prime,copilot/oswe-vscode-secondary,copilot/search-agent-a,copilot/search-agent-b,copilot/search-agent-c",
         "DEFAULT_MODEL": "auto",
         "LOG_LEVEL": "INFO"
       }
@@ -67,7 +67,7 @@ All snippets below assume you cloned Zen into `~/mcp-servers-official/zen-mcp-se
       "env": {
         "CUSTOM_API_URL": "http://localhost:4141/v1",
         "CUSTOM_API_KEY": "copilot-proxy",
-        "CUSTOM_ALLOWED_MODELS": "copilot/claude-sonnet-4.5,copilot/claude-haiku-4.5,copilot/gpt-5,copilot/gpt-5-codex,copilot/gpt-5-mini,copilot/o4-mini,copilot/gemini-2-5-pro,copilot/grok-code-fast-1",
+        "CUSTOM_ALLOWED_MODELS": "copilot/claude-opus-4.6,copilot/claude-sonnet-4.6,copilot/claude-haiku-4.5,copilot/gemini-3.1-pro-preview,copilot/gemini-3-flash-preview,copilot/gpt-5.4,copilot/gpt-5.4-mini,copilot/gpt-5.3-codex,copilot/grok-code-fast-1,copilot/minimax-m2.5,copilot/goldeneye-free-auto,copilot/oswe-vscode-prime,copilot/oswe-vscode-secondary,copilot/search-agent-a,copilot/search-agent-b,copilot/search-agent-c",
         "DEFAULT_MODEL": "auto",
         "LOG_LEVEL": "INFO"
       },
@@ -91,7 +91,7 @@ All snippets below assume you cloned Zen into `~/mcp-servers-official/zen-mcp-se
         "cd ~/mcp-servers-official/zen-mcp-server && ./scripts/start_stdio_stack.sh"
       ],
       "env": {
-        "CUSTOM_ALLOWED_MODELS": "copilot/claude-sonnet-4.5,copilot/claude-haiku-4.5,copilot/gpt-5,copilot/gpt-5-codex,copilot/gpt-5-mini,copilot/o4-mini,copilot/gemini-2-5-pro,copilot/grok-code-fast-1",
+        "CUSTOM_ALLOWED_MODELS": "copilot/claude-opus-4.6,copilot/claude-sonnet-4.6,copilot/claude-haiku-4.5,copilot/gemini-3.1-pro-preview,copilot/gemini-3-flash-preview,copilot/gpt-5.4,copilot/gpt-5.4-mini,copilot/gpt-5.3-codex,copilot/grok-code-fast-1,copilot/minimax-m2.5,copilot/goldeneye-free-auto,copilot/oswe-vscode-prime,copilot/oswe-vscode-secondary,copilot/search-agent-a,copilot/search-agent-b,copilot/search-agent-c",
         "DEFAULT_MODEL": "auto",
         "CUSTOM_API_URL": "http://localhost:4141/v1",
         "CUSTOM_API_KEY": "copilot-proxy",
@@ -105,7 +105,7 @@ All snippets below assume you cloned Zen into `~/mcp-servers-official/zen-mcp-se
 ## Model Selection Tips
 
 - The `CUSTOM_ALLOWED_MODELS` list guarantees only the newest GitHub Copilot models appear inside Zen. Adjust it after running `scripts/sync_copilot_models.py --dry-run` to inspect fresh aliases.
-- `DEFAULT_MODEL=auto` delegates to Zen’s auto-selector, which already prioritises the latest 4.5 Claude models, GPT-5 tiers, o4-mini, Gemini 2.5 Pro, and Grok code models when available.
+- `DEFAULT_MODEL=auto` delegates to Zen's auto-selector, which already prioritises Claude 4.6, GPT-5.4 tiers, Gemini 3.1/3 previews, GPT-5.3-Codex, Grok Code Fast 1, and Raptor mini when available.
 - To double-check availability, run `use zen listmodels` (Claude Code) or `gemini mcp run zen listmodels`.
 
 ## Quick Validation

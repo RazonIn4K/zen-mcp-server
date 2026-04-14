@@ -174,7 +174,7 @@ class TestConversationMemory:
                 timestamp="2023-01-01T00:01:00Z",
                 files=[str(examples_dir)],  # Directory will be expanded to files
                 tool_name="chat",
-                model_name="gpt-5",
+                model_name="gpt-5.4",
                 model_provider="openai",
             ),
         ]
@@ -198,7 +198,7 @@ class TestConversationMemory:
 
         # Test speaker identification
         assert "--- Turn 1 (Agent) ---" in history
-        assert "--- Turn 2 (gpt-5 using chat via openai) ---" in history
+        assert "--- Turn 2 (gpt-5.4 using chat via openai) ---" in history
 
         # Test content
         assert "What is Python?" in history

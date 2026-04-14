@@ -33,7 +33,7 @@ class TestConsensusTool:
             next_step_required=True,
             findings="Initial assessment shows strong value but technical complexity",
             confidence="medium",
-            models=[{"model": "flash", "stance": "neutral"}, {"model": "o3-mini", "stance": "for"}],
+            models=[{"model": "flash", "stance": "neutral"}, {"model": "gpt-5.4", "stance": "for"}],
             relevant_files=["/proposal.md"],
         )
 
@@ -81,8 +81,8 @@ class TestConsensusTool:
             next_step_required=True,
             findings="Initial analysis",
             models=[
-                {"model": "o3", "stance": "for"},
-                {"model": "o3", "stance": "against"},
+                {"model": "gpt", "stance": "for"},
+                {"model": "gpt", "stance": "against"},
                 {"model": "flash", "stance": "neutral"},
             ],
             continuation_id="test-id",
@@ -98,9 +98,9 @@ class TestConsensusTool:
                 next_step_required=True,
                 findings="Initial analysis",
                 models=[
-                    {"model": "o3", "stance": "for"},
+                    {"model": "gpt", "stance": "for"},
                     {"model": "flash", "stance": "neutral"},
-                    {"model": "o3", "stance": "for"},  # Duplicate!
+                    {"model": "gpt", "stance": "for"},  # Duplicate!
                 ],
                 continuation_id="test-id",
             )
@@ -231,14 +231,14 @@ class TestConsensusTool:
             "total_steps": 2,
             "next_step_required": True,
             "findings": "Found pros and cons",
-            "models": [{"model": "flash", "stance": "neutral"}, {"model": "o3-mini", "stance": "for"}],
+            "models": [{"model": "flash", "stance": "neutral"}, {"model": "gpt-5.4", "stance": "for"}],
         }
 
         # Verify models_to_consult is set correctly from step 1
         request = tool.get_workflow_request_model()(**arguments)
         assert len(request.models) == 2
         assert request.models[0]["model"] == "flash"
-        assert request.models[1]["model"] == "o3-mini"
+        assert request.models[1]["model"] == "gpt-5.4"
 
     def test_execute_workflow_total_steps_calculation(self):
         """Test that total_steps is calculated correctly from models."""
@@ -251,7 +251,7 @@ class TestConsensusTool:
             "total_steps": 4,  # This should be corrected to 2
             "next_step_required": True,
             "findings": "Analysis complete",
-            "models": [{"model": "flash", "stance": "neutral"}, {"model": "o3-mini", "stance": "for"}],
+            "models": [{"model": "flash", "stance": "neutral"}, {"model": "gpt-5.4", "stance": "for"}],
         }
 
         request = tool.get_workflow_request_model()(**arguments)
@@ -294,7 +294,7 @@ class TestConsensusTool:
     def test_handle_work_continuation(self):
         """Test work continuation handling - legacy method for compatibility."""
         tool = ConsensusTool()
-        tool.models_to_consult = [{"model": "flash", "stance": "neutral"}, {"model": "o3-mini", "stance": "for"}]
+        tool.models_to_consult = [{"model": "flash", "stance": "neutral"}, {"model": "gpt-5.4", "stance": "for"}]
 
         # Note: In the new workflow, model consultation happens DURING steps in execute_workflow
         # This method is kept for compatibility but not actively used in the step-by-step flow

@@ -235,24 +235,22 @@ class ModelProviderRegistry:
                     continue
 
             for model_name in available:
-                # =====================================================================================
-                # CRITICAL: Prevent double restriction filtering (Fixed Issue #98)
-                # =====================================================================================
-                # Previously, both the provider AND registry applied restrictions, causing
-                # double-filtering that resulted in "no models available" errors.
-                #
-                # Logic: If respect_restrictions=True, provider already filtered models,
-                # so registry should NOT filter them again.
-                # TEST COVERAGE: tests/test_provider_routing_bugs.py::TestOpenRouterAliasRestrictions
-                # =====================================================================================
-                if (
-                    restriction_service
-                    and not respect_restrictions  # Only filter if provider didn't already filter
-                    and not restriction_service.is_allowed(provider_type, model_name)
-                ):
-                    logging.debug("Model %s filtered by restrictions", model_name)
+                try:
+                    capabilities = provider.get_capabilities(model_name)
+                except ValueError:
+                    # Provider rejected this model per allowlist/restrictions – do not advertise it
                     continue
+                except Exception:
+                    logging.debug(
+                        "Skipping model '%s' for provider %s due to capability lookup failure",
+                        model_name,
+                        provider_type.value,
+                    )
+                    continue
+
                 models[model_name] = provider_type
+                canonical_name = capabilities.model_name
+                models.setdefault(canonical_name, provider_type)
 
         return models
 
@@ -362,7 +360,8 @@ class ModelProviderRegistry:
 
         restriction_service = get_restriction_service()
 
-        allowed_models = []
+        allowed_models: list[str] = []
+        seen: set[str] = set()
 
         # Get the provider's supported models
         try:
@@ -373,10 +372,31 @@ class ModelProviderRegistry:
             model_map = getattr(provider, "MODEL_CAPABILITIES", None)
             supported_models = list(model_map.keys()) if isinstance(model_map, dict) else []
 
-        # Filter by restrictions
+        # Filter by provider validation to honour allowlists and registry metadata
         for model_name in supported_models:
-            if restriction_service.is_allowed(provider_type, model_name):
-                allowed_models.append(model_name)
+            try:
+                capabilities = provider.get_capabilities(model_name)
+            except ValueError:
+                # Not permitted by provider (allowlist/restriction)
+                continue
+            except Exception:
+                logging.debug(
+                    "Skipping model '%s' for provider %s – capability resolution failed",
+                    model_name,
+                    provider_type.value,
+                )
+                continue
+
+            canonical_name = capabilities.model_name if capabilities else model_name
+
+            if restriction_service and not restriction_service.is_allowed(provider_type, canonical_name, model_name):
+                continue
+
+            if canonical_name in seen:
+                continue
+
+            seen.add(canonical_name)
+            allowed_models.append(canonical_name)
 
         return allowed_models
 
@@ -430,7 +450,7 @@ class ModelProviderRegistry:
 
         # Ultimate fallback if no providers have models
         logging.warning("No models available from any provider, using default fallback")
-        return "gemini-2.5-flash"
+        return "gemini-3.1-flash-lite-preview"
 
     @classmethod
     def get_available_providers_with_keys(cls) -> list[ProviderType]:

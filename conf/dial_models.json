@@ -22,38 +22,6 @@
   },
   "models": [
     {
-      "model_name": "o3-2025-04-16",
-      "friendly_name": "DIAL (O3)",
-      "aliases": ["o3"],
-      "intelligence_score": 14,
-      "description": "OpenAI O3 via DIAL - Strong reasoning model",
-      "context_window": 200000,
-      "max_output_tokens": 100000,
-      "supports_extended_thinking": false,
-      "supports_function_calling": false,
-      "supports_json_mode": true,
-      "supports_images": true,
-      "max_image_size_mb": 20.0,
-      "supports_temperature": false,
-      "temperature_constraint": "fixed"
-    },
-    {
-      "model_name": "o4-mini-2025-04-16",
-      "friendly_name": "DIAL (O4-mini)",
-      "aliases": ["o4-mini"],
-      "intelligence_score": 11,
-      "description": "OpenAI O4-mini via DIAL - Fast reasoning model",
-      "context_window": 200000,
-      "max_output_tokens": 100000,
-      "supports_extended_thinking": false,
-      "supports_function_calling": false,
-      "supports_json_mode": true,
-      "supports_images": true,
-      "max_image_size_mb": 20.0,
-      "supports_temperature": false,
-      "temperature_constraint": "fixed"
-    },
-    {
       "model_name": "anthropic.claude-sonnet-4.1-20250805-v1:0",
       "friendly_name": "DIAL (Sonnet 4.1)",
       "aliases": ["sonnet-4.1", "sonnet-4"],

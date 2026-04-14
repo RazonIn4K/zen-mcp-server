@@ -16,6 +16,17 @@ Key Features:
 - Background cleanup thread for memory management
 - Singleton pattern for consistent state within a single process
 - Drop-in replacement for Redis storage (for single-process scenarios)
+
+MULTI-AGENT SUPPORT:
+    Set USE_REDIS_STORAGE=1 to enable Redis-based storage that allows multiple
+    MCP server processes (multiple agents) to share conversation state.
+
+    Required Redis configuration:
+    - REDIS_URL: Redis connection URL (default: redis://localhost:6379/0)
+    - REDIS_PASSWORD: Optional Redis password
+    - REDIS_KEY_PREFIX: Prefix for keys (default: "zen:")
+
+    Install redis package: pip install redis
 """
 
 import logging
@@ -46,7 +57,7 @@ class InMemoryStorage:
         self._cleanup_thread.start()
 
         logger.info(
-            f"In-memory storage initialized with {timeout_hours}h timeout, cleanup every {self._cleanup_interval//60}m"
+            f"In-memory storage initialized with {timeout_hours}h timeout, cleanup every {self._cleanup_interval // 60}m"
         )
 
     def set_with_ttl(self, key: str, ttl_seconds: int, value: str) -> None:
@@ -103,12 +114,43 @@ _storage_instance = None
 _storage_lock = threading.Lock()
 
 
-def get_storage_backend() -> InMemoryStorage:
-    """Get the global storage instance (singleton pattern)"""
+def get_storage_backend():
+    """
+    Get the global storage instance (singleton pattern).
+
+    Returns either Redis-based storage (for multi-agent scenarios) or
+    in-memory storage (for single-agent scenarios) based on configuration.
+
+    Multi-Agent Support:
+        Set USE_REDIS_STORAGE=1 to enable Redis backend, which allows multiple
+        MCP server processes to share conversation state. This is required when:
+        - Multiple Claude sessions need to share conversations
+        - Multiple AI agents need to collaborate on the same threads
+        - Running distributed MCP server instances
+
+    Returns:
+        Storage backend instance (either HybridStorage or InMemoryStorage)
+    """
     global _storage_instance
     if _storage_instance is None:
         with _storage_lock:
             if _storage_instance is None:
-                _storage_instance = InMemoryStorage()
-                logger.info("Initialized in-memory conversation storage")
+                use_redis = (get_env("USE_REDIS_STORAGE", "0") or "0").lower() in ("1", "true", "yes")
+
+                if use_redis:
+                    try:
+                        from utils.redis_storage_backend import get_redis_storage_backend
+
+                        _storage_instance = get_redis_storage_backend()
+                        logger.info("Using Redis storage backend for multi-agent support")
+                    except ImportError as e:
+                        logger.warning(
+                            f"Redis storage requested but failed to import: {e}. "
+                            "Falling back to in-memory storage. Install redis: pip install redis"
+                        )
+                        _storage_instance = InMemoryStorage()
+                        logger.info("Initialized in-memory conversation storage (fallback)")
+                else:
+                    _storage_instance = InMemoryStorage()
+                    logger.info("Initialized in-memory conversation storage")
     return _storage_instance

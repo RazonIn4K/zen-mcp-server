@@ -64,7 +64,14 @@ class TestAutoMode:
                         models_with_descriptions[model_name] = description
 
         # Check all expected models are present with meaningful descriptions
-        expected_models = ["flash", "pro", "o3", "o3-mini", "o3-pro", "o4-mini"]
+        expected_models = [
+            "gemini-2.5-flash",
+            "gemini-2.5-pro",
+            "gpt-5.4-pro",
+            "gpt-5.4",
+            "grok-4.20-reasoning",
+            "grok-code-fast-1",
+        ]
         for model in expected_models:
             # Model should exist somewhere in the providers
             # Note: Some models might not be available if API keys aren't configured
