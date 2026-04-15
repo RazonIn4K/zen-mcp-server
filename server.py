@@ -49,6 +49,7 @@ from config import (  # noqa: E402
 )
 from tools import (  # noqa: E402
     AnalyzeTool,
+    ApifyTool,
     ChallengeTool,
     ChatTool,
     CLinkTool,
@@ -62,6 +63,7 @@ from tools import (  # noqa: E402
     PrecommitTool,
     RefactorTool,
     SecauditTool,
+    ShodanTool,
     TestGenTool,
     ThinkDeepTool,
     TracerTool,
@@ -276,6 +278,8 @@ TOOLS = {
     "testgen": TestGenTool(),  # Step-by-step test generation workflow with expert validation
     "challenge": ChallengeTool(),  # Critical challenge prompt wrapper to avoid automatic agreement
     "apilookup": LookupTool(),  # Quick web/API lookup instructions
+    "shodan": ShodanTool(),  # Query Shodan for internet-connected device data
+    "apify": ApifyTool(),  # Run Apify actors and retrieve results
     "listmodels": ListModelsTool(),  # List all available AI models by provider
     "version": VersionTool(),  # Display server version and system information
 }
