@@ -6,7 +6,8 @@ Provides three capabilities:
 - get_actor_run: poll the status and output of a run
 - search_actors: search the Apify actor store
 
-Requires APIFY_API_TOKEN environment variable.
+`search_actors` works anonymously. `run_actor` and `get_actor_run` require
+`APIFY_API_TOKEN`.
 """
 
 from __future__ import annotations
@@ -54,7 +55,7 @@ class ApifyTool(SimpleTool):
         return (
             "Interact with the Apify platform to run web-scraping and automation actors, "
             "retrieve run results, and search the actor store. "
-            "Requires APIFY_API_TOKEN environment variable."
+            "Searching the actor store works anonymously; running actors requires APIFY_API_TOKEN."
         )
 
     def get_system_prompt(self) -> str:
@@ -120,20 +121,21 @@ class ApifyTool(SimpleTool):
             request = self.get_request_model()(**arguments)
 
             api_token = os.environ.get("APIFY_API_TOKEN", "").strip()
-            if not api_token:
+            action = request.action
+
+            if action in {"run_actor", "get_actor_run"} and not api_token:
                 result = {
                     "status": "error",
                     "error": "APIFY_API_TOKEN environment variable is not set.",
                 }
                 return [TextContent(type="text", text=json.dumps(result, ensure_ascii=False, indent=2))]
 
-            action = request.action
             if action == "run_actor":
                 result = await self._run_actor(api_token, request.actor_id, request.input_data)
             elif action == "get_actor_run":
                 result = await self._get_actor_run(api_token, request.run_id)
             elif action == "search_actors":
-                result = await self._search_actors(api_token, request.query)
+                result = await self._search_actors(request.query)
             else:
                 result = {
                     "status": "error",
@@ -209,16 +211,15 @@ class ApifyTool(SimpleTool):
             "data": run_data,
         }
 
-    async def _search_actors(self, api_token: str, query: str | None) -> dict:
+    async def _search_actors(self, query: str | None) -> dict:
         import httpx
 
         if not query:
             return {"status": "error", "error": "query is required for search_actors."}
 
-        headers = {"Authorization": f"Bearer {api_token}"}
         params = {"search": query, "limit": 10}
         async with httpx.AsyncClient(timeout=30.0) as client:
-            resp = await client.get(f"{APIFY_API_BASE}/store", headers=headers, params=params)
+            resp = await client.get(f"{APIFY_API_BASE}/store", params=params)
             resp.raise_for_status()
             data = resp.json()
 
