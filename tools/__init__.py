@@ -3,6 +3,7 @@ Tool implementations for Zen MCP Server
 """
 
 from .analyze import AnalyzeTool
+from .apify_tool import ApifyTool
 from .apilookup import LookupTool
 from .challenge import ChallengeTool
 from .chat import ChatTool
@@ -18,6 +19,7 @@ from .refactor import RefactorTool
 from .secaudit import SecauditTool
 from .testgen import TestGenTool
 from .thinkdeep import ThinkDeepTool
+from .shodan_tool import ShodanTool
 from .tracer import TracerTool
 from .version import VersionTool
 
@@ -34,8 +36,10 @@ __all__ = [
     "ListModelsTool",
     "PlannerTool",
     "PrecommitTool",
+    "ApifyTool",
     "ChallengeTool",
     "RefactorTool",
+    "ShodanTool",
     "SecauditTool",
     "TestGenTool",
     "TracerTool",
