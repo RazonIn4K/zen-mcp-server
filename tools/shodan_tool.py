@@ -1,19 +1,25 @@
 """
 Shodan tool - query the Shodan search engine for internet-connected devices.
 
-Provides four capabilities:
+Provides six capabilities:
 - search_shodan: text search across Shodan's index
 - get_host_info: full host/IP details
 - get_ssl_info: SSL certificate info for a hostname
 - scan_network_range: submit an on-demand scan for a CIDR range
+- list_alerts: list existing Shodan monitor alerts
+- get_facets: fetch free facet counts from the host count endpoint
 
 Requires SHODAN_API_KEY environment variable.
 """
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
+import time
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from pydantic import Field
@@ -27,16 +33,29 @@ if TYPE_CHECKING:
 
 
 SHODAN_API_BASE = "https://api.shodan.io"
+DEFAULT_FACETS = "country,port,org,product"
+SHODAN_CREDIT_LEDGER = Path.home() / ".shodan_credits.json"
+SHODAN_RATE_LIMIT_SECONDS = 1.1
+_last_chargeable_request = 0.0
+_chargeable_request_lock = asyncio.Lock()
 
 SHODAN_FIELD_DESCRIPTIONS = {
     "action": (
-        "Action to perform. One of: search_shodan, get_host_info, get_ssl_info, scan_network_range."
+        "Action to perform. One of: search_shodan, get_host_info, get_ssl_info, "
+        "scan_network_range, list_alerts, get_facets."
     ),
-    "query": "Shodan search query (e.g. 'apache port:80 country:US'). Required for search_shodan.",
+    "query": (
+        "Shodan search query (e.g. 'apache port:80 country:US'). Required for search_shodan. "
+        "Optional for get_facets."
+    ),
     "limit": "Maximum number of results to return for search_shodan (default: 10, max: 100).",
     "ip": "IP address to look up. Required for get_host_info.",
     "hostname": "Hostname to check SSL certificate for. Required for get_ssl_info.",
     "cidr": "CIDR network range to scan (e.g. '192.168.1.0/24'). Required for scan_network_range.",
+    "facets": (
+        "Comma-separated facet list for get_facets (default: country,port,org,product). "
+        "This uses the free host count endpoint."
+    ),
 }
 
 
@@ -47,6 +66,39 @@ class ShodanRequest(ToolRequest):
     ip: str | None = Field(None, description=SHODAN_FIELD_DESCRIPTIONS["ip"])
     hostname: str | None = Field(None, description=SHODAN_FIELD_DESCRIPTIONS["hostname"])
     cidr: str | None = Field(None, description=SHODAN_FIELD_DESCRIPTIONS["cidr"])
+    facets: str | None = Field(DEFAULT_FACETS, description=SHODAN_FIELD_DESCRIPTIONS["facets"])
+
+
+async def _respect_chargeable_rate_limit() -> None:
+    global _last_chargeable_request
+
+    async with _chargeable_request_lock:
+        delay = SHODAN_RATE_LIMIT_SECONDS - (time.monotonic() - _last_chargeable_request)
+        if delay > 0:
+            await asyncio.sleep(delay)
+        _last_chargeable_request = time.monotonic()
+
+
+def _append_credit_ledger(action: str, subject: str, credit_type: str, credits_spent: int) -> str:
+    try:
+        if SHODAN_CREDIT_LEDGER.exists():
+            payload = json.loads(SHODAN_CREDIT_LEDGER.read_text(encoding="utf-8"))
+        else:
+            payload = {"entries": []}
+        entries = payload.setdefault("entries", [])
+        entries.append(
+            {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "action": action,
+                "subject": subject,
+                "credit_type": credit_type,
+                "credits_spent": credits_spent,
+            }
+        )
+        SHODAN_CREDIT_LEDGER.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    except Exception:
+        return str(SHODAN_CREDIT_LEDGER)
+    return str(SHODAN_CREDIT_LEDGER)
 
 
 class ShodanTool(SimpleTool):
@@ -58,7 +110,8 @@ class ShodanTool(SimpleTool):
     def get_description(self) -> str:
         return (
             "Query the Shodan search engine for internet-connected device information. "
-            "Supports text search, host/IP lookup, SSL certificate inspection, and on-demand network scanning. "
+            "Supports text search, host/IP lookup, SSL certificate inspection, alert listing, "
+            "free facet recon, and on-demand network scanning. "
             "Requires SHODAN_API_KEY environment variable."
         )
 
@@ -87,6 +140,7 @@ class ShodanTool(SimpleTool):
             "ip": {"type": "string", "description": SHODAN_FIELD_DESCRIPTIONS["ip"]},
             "hostname": {"type": "string", "description": SHODAN_FIELD_DESCRIPTIONS["hostname"]},
             "cidr": {"type": "string", "description": SHODAN_FIELD_DESCRIPTIONS["cidr"]},
+            "facets": {"type": "string", "description": SHODAN_FIELD_DESCRIPTIONS["facets"]},
         }
 
     def get_input_schema(self) -> dict[str, Any]:
@@ -95,7 +149,14 @@ class ShodanTool(SimpleTool):
             "properties": {
                 "action": {
                     "type": "string",
-                    "enum": ["search_shodan", "get_host_info", "get_ssl_info", "scan_network_range"],
+                    "enum": [
+                        "search_shodan",
+                        "get_host_info",
+                        "get_ssl_info",
+                        "scan_network_range",
+                        "list_alerts",
+                        "get_facets",
+                    ],
                     "description": SHODAN_FIELD_DESCRIPTIONS["action"],
                 },
                 "query": {"type": "string", "description": SHODAN_FIELD_DESCRIPTIONS["query"]},
@@ -109,6 +170,7 @@ class ShodanTool(SimpleTool):
                 "ip": {"type": "string", "description": SHODAN_FIELD_DESCRIPTIONS["ip"]},
                 "hostname": {"type": "string", "description": SHODAN_FIELD_DESCRIPTIONS["hostname"]},
                 "cidr": {"type": "string", "description": SHODAN_FIELD_DESCRIPTIONS["cidr"]},
+                "facets": {"type": "string", "description": SHODAN_FIELD_DESCRIPTIONS["facets"]},
             },
             "required": ["action"],
         }
@@ -146,10 +208,17 @@ class ShodanTool(SimpleTool):
                 result = await self._get_ssl_info(api_key, request.hostname)
             elif action == "scan_network_range":
                 result = await self._scan_network_range(api_key, request.cidr)
+            elif action == "list_alerts":
+                result = await self._list_alerts(api_key)
+            elif action == "get_facets":
+                result = await self._get_facets(api_key, request.query, request.facets)
             else:
                 result = {
                     "status": "error",
-                    "error": f"Unknown action '{action}'. Valid actions: search_shodan, get_host_info, get_ssl_info, scan_network_range.",
+                    "error": (
+                        f"Unknown action '{action}'. Valid actions: search_shodan, get_host_info, "
+                        "get_ssl_info, scan_network_range, list_alerts, get_facets."
+                    ),
                 }
 
             return [TextContent(type="text", text=json.dumps(result, ensure_ascii=False, indent=2))]
@@ -165,6 +234,7 @@ class ShodanTool(SimpleTool):
         if not query:
             return {"status": "error", "error": "query is required for search_shodan."}
 
+        await _respect_chargeable_rate_limit()
         params = {"key": api_key, "query": query, "minify": True}
         async with httpx.AsyncClient(timeout=30.0) as client:
             resp = await client.get(f"{SHODAN_API_BASE}/shodan/host/search", params=params)
@@ -179,6 +249,7 @@ class ShodanTool(SimpleTool):
             "total": data.get("total", 0),
             "returned": len(matches),
             "matches": matches,
+            "credit_ledger_path": _append_credit_ledger("search_shodan", query, "query", 1),
         }
 
     async def _get_host_info(self, api_key: str, ip: str | None) -> dict:
@@ -201,8 +272,9 @@ class ShodanTool(SimpleTool):
         if not hostname:
             return {"status": "error", "error": "hostname is required for get_ssl_info."}
 
-        # Shodan SSL search: query ssl.cert.subject.cn for the hostname
-        params = {"key": api_key, "query": f"ssl.cert.subject.cn:{hostname}", "minify": True}
+        await _respect_chargeable_rate_limit()
+        query = f"ssl.cert.subject.cn:{hostname}"
+        params = {"key": api_key, "query": query, "minify": True}
         async with httpx.AsyncClient(timeout=30.0) as client:
             resp = await client.get(f"{SHODAN_API_BASE}/shodan/host/search", params=params)
             resp.raise_for_status()
@@ -231,6 +303,7 @@ class ShodanTool(SimpleTool):
             "hostname": hostname,
             "total": data.get("total", 0),
             "ssl_entries": ssl_entries,
+            "credit_ledger_path": _append_credit_ledger("get_ssl_info", query, "query", 1),
         }
 
     async def _scan_network_range(self, api_key: str, cidr: str | None) -> dict:
@@ -239,6 +312,7 @@ class ShodanTool(SimpleTool):
         if not cidr:
             return {"status": "error", "error": "cidr is required for scan_network_range."}
 
+        await _respect_chargeable_rate_limit()
         async with httpx.AsyncClient(timeout=60.0) as client:
             resp = await client.post(
                 f"{SHODAN_API_BASE}/shodan/scan",
@@ -248,4 +322,47 @@ class ShodanTool(SimpleTool):
             resp.raise_for_status()
             data = resp.json()
 
-        return {"status": "success", "action": "scan_network_range", "cidr": cidr, "data": data}
+        return {
+            "status": "success",
+            "action": "scan_network_range",
+            "cidr": cidr,
+            "data": data,
+            "credit_ledger_path": _append_credit_ledger("scan_network_range", cidr, "scan", 1),
+        }
+
+    async def _list_alerts(self, api_key: str) -> dict:
+        import httpx
+
+        params = {"key": api_key}
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.get(f"{SHODAN_API_BASE}/shodan/alert/info", params=params)
+            resp.raise_for_status()
+            data = resp.json()
+
+        return {
+            "status": "success",
+            "action": "list_alerts",
+            "total": len(data) if isinstance(data, list) else 0,
+            "alerts": data,
+        }
+
+    async def _get_facets(self, api_key: str, query: str | None, facets: str | None) -> dict:
+        import httpx
+
+        params = {"key": api_key, "facets": facets or DEFAULT_FACETS}
+        if query:
+            params["query"] = query
+
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.get(f"{SHODAN_API_BASE}/shodan/host/count", params=params)
+            resp.raise_for_status()
+            data = resp.json()
+
+        return {
+            "status": "success",
+            "action": "get_facets",
+            "query": query or "",
+            "requested_facets": params["facets"],
+            "total": data.get("total", 0),
+            "facets": data.get("facets", {}),
+        }

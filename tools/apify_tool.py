@@ -1,13 +1,14 @@
 """
 Apify tool - interact with the Apify platform to run actors and retrieve results.
 
-Provides three capabilities:
+Provides four capabilities:
 - run_actor: start an Apify actor with custom input
 - get_actor_run: poll the status and output of a run
+- get_dataset_items: retrieve structured dataset items directly
 - search_actors: search the Apify actor store
 
-`search_actors` works anonymously. `run_actor` and `get_actor_run` require
-`APIFY_API_TOKEN`.
+`search_actors` works anonymously. `run_actor`, `get_actor_run`, and
+`get_dataset_items` require `APIFY_API_TOKEN`.
 """
 
 from __future__ import annotations
@@ -29,10 +30,15 @@ if TYPE_CHECKING:
 APIFY_API_BASE = "https://api.apify.com/v2"
 
 APIFY_FIELD_DESCRIPTIONS = {
-    "action": "Action to perform. One of: run_actor, get_actor_run, search_actors.",
-    "actor_id": "Actor ID or name in 'username~actor-name' format (e.g. 'apify~web-scraper'). Required for run_actor.",
+    "action": "Action to perform. One of: run_actor, get_actor_run, get_dataset_items, search_actors.",
+    "actor_id": (
+        "Actor ID or name in 'username~actor-name' format (e.g. 'apify~web-scraper'). "
+        "Required for run_actor."
+    ),
     "input_data": "JSON input object to pass to the actor. Required for run_actor.",
     "run_id": "Run ID returned by run_actor. Required for get_actor_run.",
+    "dataset_id": "Dataset ID returned by run_actor or get_actor_run. Required for get_dataset_items.",
+    "limit": "Maximum number of dataset items to return (default: 10, max: 100).",
     "query": "Search term for finding actors in the Apify store. Required for search_actors.",
 }
 
@@ -42,6 +48,8 @@ class ApifyRequest(ToolRequest):
     actor_id: str | None = Field(None, description=APIFY_FIELD_DESCRIPTIONS["actor_id"])
     input_data: dict | None = Field(None, description=APIFY_FIELD_DESCRIPTIONS["input_data"])
     run_id: str | None = Field(None, description=APIFY_FIELD_DESCRIPTIONS["run_id"])
+    dataset_id: str | None = Field(None, description=APIFY_FIELD_DESCRIPTIONS["dataset_id"])
+    limit: int = Field(10, description=APIFY_FIELD_DESCRIPTIONS["limit"])
     query: str | None = Field(None, description=APIFY_FIELD_DESCRIPTIONS["query"])
 
 
@@ -54,7 +62,7 @@ class ApifyTool(SimpleTool):
     def get_description(self) -> str:
         return (
             "Interact with the Apify platform to run web-scraping and automation actors, "
-            "retrieve run results, and search the actor store. "
+            "retrieve run results, fetch dataset items, and search the actor store. "
             "Searching the actor store works anonymously; running actors requires APIFY_API_TOKEN."
         )
 
@@ -81,6 +89,8 @@ class ApifyTool(SimpleTool):
             "actor_id": {"type": "string", "description": APIFY_FIELD_DESCRIPTIONS["actor_id"]},
             "input_data": {"type": "object", "description": APIFY_FIELD_DESCRIPTIONS["input_data"]},
             "run_id": {"type": "string", "description": APIFY_FIELD_DESCRIPTIONS["run_id"]},
+            "dataset_id": {"type": "string", "description": APIFY_FIELD_DESCRIPTIONS["dataset_id"]},
+            "limit": {"type": "integer", "description": APIFY_FIELD_DESCRIPTIONS["limit"]},
             "query": {"type": "string", "description": APIFY_FIELD_DESCRIPTIONS["query"]},
         }
 
@@ -90,7 +100,7 @@ class ApifyTool(SimpleTool):
             "properties": {
                 "action": {
                     "type": "string",
-                    "enum": ["run_actor", "get_actor_run", "search_actors"],
+                    "enum": ["run_actor", "get_actor_run", "get_dataset_items", "search_actors"],
                     "description": APIFY_FIELD_DESCRIPTIONS["action"],
                 },
                 "actor_id": {"type": "string", "description": APIFY_FIELD_DESCRIPTIONS["actor_id"]},
@@ -99,6 +109,14 @@ class ApifyTool(SimpleTool):
                     "description": APIFY_FIELD_DESCRIPTIONS["input_data"],
                 },
                 "run_id": {"type": "string", "description": APIFY_FIELD_DESCRIPTIONS["run_id"]},
+                "dataset_id": {"type": "string", "description": APIFY_FIELD_DESCRIPTIONS["dataset_id"]},
+                "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "default": 10,
+                    "description": APIFY_FIELD_DESCRIPTIONS["limit"],
+                },
                 "query": {"type": "string", "description": APIFY_FIELD_DESCRIPTIONS["query"]},
             },
             "required": ["action"],
@@ -123,7 +141,7 @@ class ApifyTool(SimpleTool):
             api_token = os.environ.get("APIFY_API_TOKEN", "").strip()
             action = request.action
 
-            if action in {"run_actor", "get_actor_run"} and not api_token:
+            if action in {"run_actor", "get_actor_run", "get_dataset_items"} and not api_token:
                 result = {
                     "status": "error",
                     "error": "APIFY_API_TOKEN environment variable is not set.",
@@ -134,12 +152,17 @@ class ApifyTool(SimpleTool):
                 result = await self._run_actor(api_token, request.actor_id, request.input_data)
             elif action == "get_actor_run":
                 result = await self._get_actor_run(api_token, request.run_id)
+            elif action == "get_dataset_items":
+                result = await self._get_dataset_items(api_token, request.dataset_id, request.limit)
             elif action == "search_actors":
                 result = await self._search_actors(request.query)
             else:
                 result = {
                     "status": "error",
-                    "error": f"Unknown action '{action}'. Valid actions: run_actor, get_actor_run, search_actors.",
+                    "error": (
+                        f"Unknown action '{action}'. Valid actions: run_actor, get_actor_run, "
+                        "get_dataset_items, search_actors."
+                    ),
                 }
 
             return [TextContent(type="text", text=json.dumps(result, ensure_ascii=False, indent=2))]
@@ -172,6 +195,7 @@ class ApifyTool(SimpleTool):
             "run_id": run.get("id"),
             "run_status": run.get("status"),
             "started_at": run.get("startedAt"),
+            "dataset_id": run.get("defaultDatasetId"),
             "data": run,
         }
 
@@ -183,22 +207,16 @@ class ApifyTool(SimpleTool):
 
         headers = {"Authorization": f"Bearer {api_token}"}
         async with httpx.AsyncClient(timeout=30.0) as client:
-            # Fetch run status
             run_resp = await client.get(f"{APIFY_API_BASE}/actor-runs/{run_id}", headers=headers)
             run_resp.raise_for_status()
             run_data = run_resp.json().get("data", {})
 
-            output: Any = None
-            if run_data.get("status") == "SUCCEEDED":
-                dataset_id = run_data.get("defaultDatasetId")
-                if dataset_id:
-                    ds_resp = await client.get(
-                        f"{APIFY_API_BASE}/datasets/{dataset_id}/items",
-                        headers=headers,
-                        params={"clean": True, "limit": 100},
-                    )
-                    if ds_resp.status_code == 200:
-                        output = ds_resp.json()
+        dataset_id = run_data.get("defaultDatasetId")
+        output: Any = None
+        if run_data.get("status") == "SUCCEEDED" and dataset_id:
+            dataset_result = await self._get_dataset_items(api_token, dataset_id, 100)
+            if dataset_result.get("status") == "success":
+                output = dataset_result.get("items")
 
         return {
             "status": "success",
@@ -207,8 +225,34 @@ class ApifyTool(SimpleTool):
             "run_status": run_data.get("status"),
             "started_at": run_data.get("startedAt"),
             "finished_at": run_data.get("finishedAt"),
+            "dataset_id": dataset_id,
             "output": output,
             "data": run_data,
+        }
+
+    async def _get_dataset_items(self, api_token: str, dataset_id: str | None, limit: int = 10) -> dict:
+        import httpx
+
+        if not dataset_id:
+            return {"status": "error", "error": "dataset_id is required for get_dataset_items."}
+
+        safe_limit = max(1, min(limit, 100))
+        headers = {"Authorization": f"Bearer {api_token}"}
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.get(
+                f"{APIFY_API_BASE}/datasets/{dataset_id}/items",
+                headers=headers,
+                params={"clean": True, "limit": safe_limit},
+            )
+            resp.raise_for_status()
+            data = resp.json()
+
+        return {
+            "status": "success",
+            "action": "get_dataset_items",
+            "dataset_id": dataset_id,
+            "returned": len(data) if isinstance(data, list) else 0,
+            "items": data,
         }
 
     async def _search_actors(self, query: str | None) -> dict:
