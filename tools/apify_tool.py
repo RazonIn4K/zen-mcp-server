@@ -145,6 +145,7 @@ class ApifyTool(SimpleTool):
                 result = {
                     "status": "error",
                     "error": "APIFY_API_TOKEN environment variable is not set.",
+                    "hint": "Get a free token at https://console.apify.com/account/integrations",
                 }
                 return [TextContent(type="text", text=json.dumps(result, ensure_ascii=False, indent=2))]
 
@@ -184,6 +185,12 @@ class ApifyTool(SimpleTool):
         url = f"{APIFY_API_BASE}/acts/{actor_id}/runs"
         async with httpx.AsyncClient(timeout=60.0) as client:
             resp = await client.post(url, headers=headers, json=input_data)
+            if resp.status_code == 401:
+                return {
+                    "status": "error",
+                    "error": "APIFY_API_TOKEN is invalid or expired (HTTP 401).",
+                    "hint": "Get a valid token at https://console.apify.com/account/integrations",
+                }
             resp.raise_for_status()
             data = resp.json()
 

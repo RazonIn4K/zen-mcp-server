@@ -173,3 +173,33 @@ async def test_apify_get_dataset_items_uses_requested_limit(monkeypatch):
     assert result["status"] == "success"
     assert result["returned"] == 2
     assert result["items"][0]["id"] == 1
+
+
+@pytest.mark.asyncio
+async def test_apify_missing_token_returns_hint(monkeypatch):
+    monkeypatch.delenv("APIFY_API_TOKEN", raising=False)
+
+    tool = ApifyTool()
+    results = await tool.execute({"action": "run_actor", "actor_id": "apify~sample", "input_data": {}})
+    payload = json.loads(results[0].text)
+
+    assert payload["status"] == "error"
+    assert "hint" in payload
+    assert "console.apify.com" in payload["hint"]
+
+
+@pytest.mark.asyncio
+async def test_apify_run_actor_401_returns_hint(monkeypatch):
+    import httpx
+
+    def fake_post(url, headers=None, json=None, data=None, params=None):
+        return FakeResponse({}, status_code=401)
+
+    monkeypatch.setattr(httpx, "AsyncClient", lambda *args, **kwargs: FakeAsyncClient(post_handler=fake_post))
+
+    tool = ApifyTool()
+    result = await tool._run_actor("bad-token", "apify~sample", {})
+
+    assert result["status"] == "error"
+    assert "hint" in result
+    assert "console.apify.com" in result["hint"]
