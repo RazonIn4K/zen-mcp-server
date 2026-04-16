@@ -113,6 +113,7 @@ from typing import Any, Optional
 from pydantic import BaseModel
 
 from utils.env import get_env
+from utils.conversation_transcript import persist_thread_snapshot
 
 logger = logging.getLogger(__name__)
 
@@ -263,6 +264,7 @@ def create_thread(tool_name: str, initial_request: dict[str, Any], parent_thread
     storage = get_storage()
     key = f"thread:{thread_id}"
     storage.setex(key, CONVERSATION_TIMEOUT_SECONDS, context.model_dump_json())
+    persist_thread_snapshot(context, "thread_created")
 
     logger.debug(f"[THREAD] Created new thread {thread_id} with parent {parent_thread_id}")
 
@@ -382,6 +384,7 @@ def add_turn(
         storage = get_storage()
         key = f"thread:{thread_id}"
         storage.setex(key, CONVERSATION_TIMEOUT_SECONDS, context.model_dump_json())  # Refresh TTL to configured timeout
+        persist_thread_snapshot(context, f"turn_added:{role}")
         return True
     except Exception as e:
         logger.debug(f"[FLOW] Failed to save turn to storage: {type(e).__name__}")

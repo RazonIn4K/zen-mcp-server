@@ -227,6 +227,12 @@ CONVERSATION_TIMEOUT_HOURS=5
 
 # Maximum conversation turns (each exchange = 2 turns)
 MAX_CONVERSATION_TURNS=20
+
+# Optional local transcript persistence for later inspection
+# Writes JSON snapshots, Markdown transcripts, and an index.jsonl activity log
+# Default: disabled
+CONVERSATION_TRANSCRIPTS_ENABLED=false
+CONVERSATION_TRANSCRIPTS_DIR=logs/conversations
 ```
 
 **Logging Configuration:**
