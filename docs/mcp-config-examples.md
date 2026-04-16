@@ -55,6 +55,32 @@ All snippets below assume you cloned Zen into `~/mcp-servers-official/zen-mcp-se
 }
 ```
 
+## Raycast ("Install MCP Server" form)
+
+Raycast stores the server under its own `mcpServers` wrapper, but the install form expects a one-key JSON object.
+Paste only the server entry itself:
+
+```json
+{
+  "zen": {
+    "command": "bash",
+    "args": [
+      "-lc",
+      "cd /Users/davidortiz/mcp-servers-official/zen-mcp-server && ./scripts/start_stdio_stack.sh"
+    ],
+    "env": {
+      "CUSTOM_API_URL": "http://localhost:4141/v1",
+      "CUSTOM_API_KEY": "copilot-proxy",
+      "COPILOT_REUSE_EXISTING": "1",
+      "DEFAULT_MODEL": "auto",
+      "LOG_LEVEL": "INFO"
+    }
+  }
+}
+```
+
+If a Copilot proxy is already listening on port `4141`, Zen will now reuse it automatically when the `/v1/models` endpoint is healthy.
+
 ## Gemini CLI (`~/.gemini/settings.json`)
 
 ```json

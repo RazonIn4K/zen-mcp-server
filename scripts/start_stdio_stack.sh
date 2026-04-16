@@ -78,6 +78,11 @@ wait_for_proxy() {
   done
 }
 
+existing_proxy_ready() {
+  local url="http://localhost:${COPILOT_PORT}/v1/models"
+  curl -sSf "${url}" >/dev/null 2>&1
+}
+
 is_port_listening() {
   if command -v lsof >/dev/null 2>&1; then
     lsof -PiTCP:"${COPILOT_PORT}" -sTCP:LISTEN -t >/dev/null 2>&1
@@ -119,9 +124,12 @@ log "Sync log: ${SYNC_LOG}"
 log "Run-server log: ${RUNSERVER_LOG}"
 
 if is_port_listening; then
-  if [[ "${COPILOT_REUSE_EXISTING}" == "1" ]]; then
+  if existing_proxy_ready; then
     COPILOT_MANAGED=0
-    log "Reusing existing Copilot proxy on port ${COPILOT_PORT}"
+    log "Detected ready Copilot proxy on port ${COPILOT_PORT}; reusing it"
+  elif [[ "${COPILOT_REUSE_EXISTING}" == "1" ]]; then
+    COPILOT_MANAGED=0
+    log "Port ${COPILOT_PORT} already in use; waiting for existing proxy to become ready"
   else
     log "Port ${COPILOT_PORT} already in use. Set COPILOT_REUSE_EXISTING=1 to reuse it or pick another port."
     exit 1
