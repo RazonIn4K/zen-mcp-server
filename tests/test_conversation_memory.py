@@ -5,6 +5,7 @@ Tests the Redis-based conversation persistence needed for AI-to-AI multi-turn
 discussions in stateless MCP environments.
 """
 
+import json
 import os
 from unittest.mock import Mock, patch
 
@@ -110,6 +111,75 @@ class TestConversationMemory:
         # Verify Redis get and setex were called
         mock_client.get.assert_called_once()
         mock_client.setex.assert_called_once()
+
+    @patch("utils.conversation_memory.get_storage")
+    def test_create_thread_writes_transcript_when_enabled(self, mock_storage, tmp_path, monkeypatch):
+        """Test thread snapshots are written to disk when enabled."""
+        mock_client = Mock()
+        mock_storage.return_value = mock_client
+        monkeypatch.setenv("CONVERSATION_TRANSCRIPTS_ENABLED", "true")
+        monkeypatch.setenv("CONVERSATION_TRANSCRIPTS_DIR", str(tmp_path))
+
+        thread_id = create_thread("chat", {"prompt": "Hello", "files": ["/test.py"]})
+
+        json_path = tmp_path / f"{thread_id}.json"
+        markdown_path = tmp_path / f"{thread_id}.md"
+        index_path = tmp_path / "index.jsonl"
+
+        assert json_path.exists()
+        assert markdown_path.exists()
+        assert index_path.exists()
+
+        payload = json.loads(json_path.read_text(encoding="utf-8"))
+        assert payload["thread_id"] == thread_id
+        assert payload["event"] == "thread_created"
+        assert payload["turn_count"] == 0
+
+        transcript = markdown_path.read_text(encoding="utf-8")
+        assert "# Zen Conversation Transcript" in transcript
+        assert "_No turns recorded yet._" in transcript
+
+    @patch("utils.conversation_memory.get_storage")
+    def test_add_turn_writes_transcript_when_enabled(self, mock_storage, tmp_path, monkeypatch):
+        """Test turn updates are reflected in transcript files when enabled."""
+        mock_client = Mock()
+        mock_storage.return_value = mock_client
+        monkeypatch.setenv("CONVERSATION_TRANSCRIPTS_ENABLED", "true")
+        monkeypatch.setenv("CONVERSATION_TRANSCRIPTS_DIR", str(tmp_path))
+
+        test_uuid = "12345678-1234-1234-1234-123456789012"
+        context_obj = ThreadContext(
+            thread_id=test_uuid,
+            created_at="2023-01-01T00:00:00Z",
+            last_updated_at="2023-01-01T00:01:00Z",
+            tool_name="chat",
+            turns=[],
+            initial_context={"prompt": "test"},
+        )
+        mock_client.get.return_value = context_obj.model_dump_json()
+
+        success = add_turn(test_uuid, "assistant", "Hello there", tool_name="chat", model_name="gpt-5.4")
+
+        assert success is True
+
+        json_path = tmp_path / f"{test_uuid}.json"
+        markdown_path = tmp_path / f"{test_uuid}.md"
+        index_path = tmp_path / "index.jsonl"
+
+        payload = json.loads(json_path.read_text(encoding="utf-8"))
+        assert payload["event"] == "turn_added:assistant"
+        assert payload["turn_count"] == 1
+        assert payload["turns"][0]["content"] == "Hello there"
+
+        transcript = markdown_path.read_text(encoding="utf-8")
+        assert "Hello there" in transcript
+        assert "gpt-5.4" in transcript
+
+        index_lines = index_path.read_text(encoding="utf-8").strip().splitlines()
+        assert len(index_lines) == 1
+        index_record = json.loads(index_lines[0])
+        assert index_record["thread_id"] == test_uuid
+        assert index_record["event"] == "turn_added:assistant"
 
     @patch("utils.conversation_memory.get_storage")
     def test_add_turn_max_limit(self, mock_storage):
