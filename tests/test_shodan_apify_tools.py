@@ -1,5 +1,4 @@
 import json
-from pathlib import Path
 
 import pytest
 
@@ -66,6 +65,7 @@ async def test_shodan_get_facets_uses_count_endpoint(monkeypatch):
 @pytest.mark.asyncio
 async def test_shodan_search_writes_credit_ledger(monkeypatch, tmp_path):
     import httpx
+
     import tools.shodan_tool as shodan_tool
 
     ledger_path = tmp_path / "credits.json"
