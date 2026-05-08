@@ -38,7 +38,6 @@ OUTDATED_COPILOT_MODEL_PREFIXES = (
     "gpt-4.1",
     "gpt-41",
     "gpt-5.1",
-    "gpt-5.2",
     "gpt-5-mini",
     "text-embedding-",
 )
@@ -47,18 +46,24 @@ OUTDATED_COPILOT_MODEL_IDS = {
     "claude-sonnet-4",
     "claude-sonnet-4.5",
     "gemini-2.5-pro",
+    "gpt-5.2",  # Non-codex gpt-5.2 is outdated; gpt-5.2-codex is valid
+    # Models rejected by student entitlement tier - exclude from sync
+    "gpt-5.4",
+    "gpt-5.5",
+    "claude-opus-4.7",
+    "claude-sonnet-4.6",
 }
 
 ALIAS_SANITISE_PATTERN = re.compile(r"[^a-z0-9]+")
 SEMANTIC_COPILOT_ALIASES = {
     "claude-opus-4.6": ["opus", "claude"],
-    "claude-sonnet-4.6": ["sonnet"],
     "claude-haiku-4.5": ["haiku"],
     "gemini-3.1-pro-preview": ["gemini"],
     "gemini-3-flash-preview": ["gemini-flash"],
-    "gpt-5.4": ["gpt"],
+    # Note: gpt-5.4 and claude-sonnet-4.6 removed (student entitlement)
     "gpt-5.4-mini": ["gpt-mini"],
     "gpt-5.3-codex": ["codex"],
+    "gpt-5.2-codex": [],
     "grok-code-fast-1": ["grok-code"],
     "minimax-m2.5": ["minimax"],
     "oswe-vscode-prime": ["raptor-prime", "raptor-mini"],
@@ -154,9 +159,22 @@ def infer_capabilities(model_id: str) -> dict[str, Any]:
             intelligence = 20
             max_output = 300_000
         elif "mini" in base:
+            # GPT-5.4-mini is an agentic reasoning model (Codex-class), no temperature
+            supports_temperature = False
             intelligence = 18
 
-    # GPT-5.3 Codex - latest Codex-optimized agentic coding model
+    # GPT-5.2 Codex - agentic coding model (no temperature support)
+    elif "gpt-5.2-codex" in base or "gpt5.2codex" in base:
+        context_window = 400_000
+        max_output = 128_000
+        intelligence = 17
+        supports_images = True
+        supports_extended_thinking = True
+        supports_function_calling = True
+        supports_temperature = False
+        allow_code_generation = True
+
+    # GPT-5.3 Codex - latest Codex-optimized agentic coding model (no temperature support)
     elif "gpt-5.3-codex" in base or "gpt5.3codex" in base:
         context_window = 400_000
         max_output = 128_000
@@ -164,6 +182,7 @@ def infer_capabilities(model_id: str) -> dict[str, Any]:
         supports_images = True
         supports_extended_thinking = True
         supports_function_calling = True
+        supports_temperature = False
         allow_code_generation = True
 
     # O3/O4 reasoning models

@@ -369,7 +369,7 @@ class TestCustomProviderOpenRouterRestrictions:
         assert not provider.validate_model_name("haiku")
 
         # Should still validate custom models defined in conf/custom_models.json
-        assert provider.validate_model_name("gpt-5.4")
+        assert provider.validate_model_name("gpt-5.3-codex")
 
     @patch.dict(
         os.environ,
@@ -395,7 +395,7 @@ class TestCustomProviderOpenRouterRestrictions:
             provider.get_capabilities("haiku")
 
         # Should still work for custom models
-        capabilities = provider.get_capabilities("gpt-5.4")
+        capabilities = provider.get_capabilities("gpt-5.3-codex")
         assert capabilities.provider == ProviderType.CUSTOM
 
     @patch.dict(os.environ, {"OPENROUTER_ALLOWED_MODELS": "opus", "CUSTOM_ALLOWED_MODELS": ""}, clear=False)
@@ -418,7 +418,7 @@ class TestCustomProviderOpenRouterRestrictions:
         assert not provider.validate_model_name("haiku")
 
         # Should still validate custom models
-        assert provider.validate_model_name("gpt-5.4")
+        assert provider.validate_model_name("gpt-5.3-codex")
 
     @patch.dict(
         os.environ,
