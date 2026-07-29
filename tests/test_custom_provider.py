@@ -40,7 +40,7 @@ class TestCustomProvider:
         provider = CustomProvider(api_key="test-key", base_url="http://localhost:11434/v1")
 
         # Known model should validate
-        assert provider.validate_model_name("grok-code-fast-1")
+        assert provider.validate_model_name("gpt-4o")
 
         # For custom provider, unknown models return False when not in registry
         # This is expected behavior - custom models need to be declared in custom_models.json
@@ -63,7 +63,7 @@ class TestCustomProvider:
                 provider.get_capabilities("gpt")
 
             # Test with a custom model from the local registry
-            capabilities = provider.get_capabilities("grok-code-fast-1")
+            capabilities = provider.get_capabilities("gpt-4o")
             assert capabilities.provider == ProviderType.CUSTOM
             assert capabilities.context_window > 0
 
@@ -92,15 +92,15 @@ class TestCustomProvider:
         assert resolved == "meta-llama/llama-4-maverick"
 
         # Test Copilot model alias
-        resolved_local = provider._resolve_model_name("copilot/grok-code")
-        assert resolved_local == "grok-code-fast-1"
+        resolved_local = provider._resolve_model_name("copilot/gpt-4o")
+        assert resolved_local == "gpt-4o"
 
     def test_no_thinking_mode_support(self):
         """Custom provider generic capabilities default to no thinking mode."""
         provider = CustomProvider(api_key="test-key", base_url="http://localhost:11434/v1")
 
-        # grok-code-fast-1 is a known Copilot model that should work
-        assert not provider.get_capabilities("grok-code-fast-1").supports_extended_thinking
+        # gpt-4o is a known Copilot compatibility model without thinking mode
+        assert not provider.get_capabilities("gpt-4o").supports_extended_thinking
 
         # Unknown models should raise error
         with pytest.raises(ValueError, match="Unsupported model 'any-model' for provider custom"):
@@ -117,7 +117,7 @@ class TestCustomProvider:
         # Call with an alias
         result = provider.generate_content(
             prompt="test prompt",
-            model_name="copilot/grok-code",
+            model_name="copilot/gpt-4o",
             temperature=0.7,  # This is an alias
         )
 

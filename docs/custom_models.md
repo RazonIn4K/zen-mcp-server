@@ -188,6 +188,11 @@ The script queries `CUSTOM_API_URL` (defaulting to `http://localhost:4141/v1`), 
 and merges them with any existing local models in `conf/custom_models.json`. Re-run the script whenever your Copilot
 account gains new models so Zen stays in sync.
 
+> **Copilot Pro+ note:** Upgrading to Copilot Pro+ exposes additional models (for example, `claude-opus-5`,
+> `claude-fable-5`, `gpt-5.5`, `gpt-5.6-sol`, and internal agent/search models such as `exec-agent-*`,
+> `copilot-search-*`, and `mai-code-1-flash-*`). The sync script includes these API-only models even when they are
+> not shown in Copilot's model picker. Run the script after upgrading to refresh `conf/custom_models.json`.
+
 Need only the newest Copilot models? Set `CUSTOM_ALLOWED_MODELS` (see `copilot.env.example`) to the aliases you want
 exposed - e.g. `copilot/claude-sonnet-4.6`, `copilot/gpt-5.4`, `copilot/gpt-5.3-codex`, `copilot/grok-code-fast-1`.
 

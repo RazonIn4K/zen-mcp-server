@@ -181,7 +181,7 @@ XAI_ALLOWED_MODELS=grok,grok-code
 OPENROUTER_ALLOWED_MODELS=opus,sonnet,mistral
 
 # Custom/Local model restrictions (Copilot proxy or other OpenAI-compatible endpoints)
-CUSTOM_ALLOWED_MODELS=copilot/claude-opus-4.6,copilot/gpt-5.4
+CUSTOM_ALLOWED_MODELS=copilot/claude-haiku-4.5,copilot/claude-opus-4.5,copilot/claude-sonnet-4.5,copilot/claude-sonnet-4.6,copilot/claude-sonnet-5,copilot/gemini-2.5-pro,copilot/gemini-3-flash-preview,copilot/gemini-3.1-pro-preview,copilot/gemini-3.5-flash,copilot/gemini-3.6-flash,copilot/gpt-4.1,copilot/gpt-4.1-2025-04-14,copilot/gpt-4o,copilot/gpt-5-mini,copilot/gpt-5.3-codex,copilot/gpt-5.4,copilot/gpt-5.4-mini,copilot/gpt-5.6-luna,copilot/gpt-5.6-terra,copilot/kimi-k2.7-code,copilot/mai-code-1-flash-picker,copilot/oswe-vscode-prime
 ```
 
 **Supported Model Names:** The names/aliases listed in the JSON manifests above are the authoritative source. Keep in mind:

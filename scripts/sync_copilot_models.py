@@ -38,42 +38,71 @@ OUTDATED_COPILOT_MODEL_PREFIXES = (
     "gpt-4.1",
     "gpt-41",
     "gpt-5.1",
-    "gpt-5-mini",
     "text-embedding-",
 )
 OUTDATED_COPILOT_MODEL_IDS = {
-    "claude-opus-4.5",
     "claude-sonnet-4",
-    "claude-sonnet-4.5",
-    "gemini-2.5-pro",
     "gpt-5.2",  # Non-codex gpt-5.2 is outdated; gpt-5.2-codex is valid
-    # Models rejected by student entitlement tier - exclude from sync
-    "gpt-5.4",
-    "gpt-5.5",
-    "claude-opus-4.7",
-    "claude-sonnet-4.6",
+}
+EXPLICIT_COPILOT_CHAT_MODELS = {
+    "gemini-2.5-pro",
+    "gpt-4.1",
+    "gpt-4.1-2025-04-14",
+    "gpt-4o",
+    "gpt-5-mini",
+}
+
+# Models that are not surfaced in Copilot's model picker but are still reachable
+# through the API on supported tiers (for example, Copilot Pro+ internal agents).
+COPILOT_API_ONLY_MODELS = {
+    "auto-model-3",
+    "copilot-search-a",
+    "copilot-search-b",
+    "copilot-search-c",
+    "exec-agent-a",
+    "exec-agent-b",
+    "exec-agent-c",
+    "mai-code-1-flash",
+    "mai-code-1-flash-secondary",
+    "mai-code-1-flash-tertiary",
+    "trajectory-compaction",
 }
 
 ALIAS_SANITISE_PATTERN = re.compile(r"[^a-z0-9]+")
 SEMANTIC_COPILOT_ALIASES = {
-    "claude-opus-4.6": ["opus", "claude"],
+    "claude-opus-5": ["opus", "claude"],
+    "claude-opus-4.8": ["opus", "claude"],
+    "claude-opus-4.8-fast": [],
+    "claude-opus-4.7": [],
+    "claude-opus-4.5": ["opus-4.5"],
+    "claude-fable-5": ["fable"],
     "claude-haiku-4.5": ["haiku"],
+    "claude-sonnet-5": ["sonnet"],
+    "claude-sonnet-4.6": ["sonnet-4.6"],
     "gemini-3.1-pro-preview": ["gemini"],
     "gemini-3-flash-preview": ["gemini-flash"],
-    # Note: gpt-5.4 and claude-sonnet-4.6 removed (student entitlement)
+    "gemini-2.5-pro": ["gemini-2-5-pro"],
+    "gpt-5.6-luna": ["luna"],
+    "gpt-5.6-terra": ["terra"],
+    "gpt-5.6-sol": ["sol"],
+    "gpt-5.5": ["gpt-5.5"],
     "gpt-5.4-mini": ["gpt-mini"],
     "gpt-5.3-codex": ["codex"],
+    # Note: gpt-5-codex resolves to the current Codex-capable family
+    "gpt-5.3-codex": ["gpt-5-codex"],
     "gpt-5.2-codex": [],
     "grok-code-fast-1": ["grok-code"],
     "minimax-m2.5": ["minimax"],
+    "kimi-k2.7-code": ["kimi"],
+    "mai-code-1-flash-picker": ["mai-code"],
     "oswe-vscode-prime": ["raptor-prime", "raptor-mini"],
     "oswe-vscode-secondary": ["raptor-secondary"],
 }
 
 DEFAULT_README = {
-    "description": "Model metadata for local/self-hosted OpenAI-compatible endpoints (Custom provider).",
+    "description": "Model metadata for Copilot API proxy (Custom provider).",
     "documentation": "https://github.com/BeehiveInnovations/zen-mcp-server/blob/main/docs/custom_models.md",
-    "usage": "Each entry will be advertised by the Custom provider. Aliases are case-insensitive.",
+    "usage": "Models listed here are exposed through the Custom provider via Copilot proxy. Aliases are case-insensitive.",
     "field_notes": "Matches providers/shared/model_capabilities.py.",
     "field_descriptions": {
         "model_name": "The model identifier e.g., 'llama3.2'",
@@ -101,6 +130,8 @@ class CopilotModel:
     model_id: str
     display_name: str
     owned_by: str
+    model_picker_enabled: bool
+    policy_state: str | None
 
     @classmethod
     def from_payload(cls, payload: dict[str, Any]) -> CopilotModel | None:
@@ -110,7 +141,17 @@ class CopilotModel:
 
         display_name = payload.get("display_name") or model_id
         owned_by = payload.get("owned_by") or "github-copilot"
-        return cls(model_id=model_id, display_name=display_name, owned_by=owned_by)
+        policy = payload.get("policy")
+        policy_state = policy.get("state") if isinstance(policy, dict) else None
+        return cls(
+            model_id=model_id,
+            display_name=display_name,
+            owned_by=owned_by,
+            # Generic OpenAI-compatible endpoints do not expose Copilot's
+            # picker field; only an explicit false should hide a model.
+            model_picker_enabled=payload.get("model_picker_enabled") is not False,
+            policy_state=policy_state,
+        )
 
 
 def slugify(value: str) -> str:
@@ -122,6 +163,19 @@ def is_current_chat_model(model: CopilotModel) -> bool:
     """Return whether a Copilot model should be exposed for chat generation."""
 
     base = model.model_id.lower()
+
+    if model.policy_state == "disabled":
+        return False
+
+    if base in EXPLICIT_COPILOT_CHAT_MODELS:
+        return True
+
+    if base in COPILOT_API_ONLY_MODELS:
+        return True
+
+    if not model.model_picker_enabled:
+        return False
+
     if base in OUTDATED_COPILOT_MODEL_IDS:
         return False
 
@@ -148,8 +202,8 @@ def infer_capabilities(model_id: str) -> dict[str, Any]:
 
     # GPT-5.4 series - latest flagship generation
     if "gpt-5.4" in base or "gpt5.4" in base:
-        context_window = 500_000
-        max_output = 150_000
+        context_window = 400_000
+        max_output = 128_000
         intelligence = 20
         supports_images = True
         supports_extended_thinking = True
@@ -163,6 +217,27 @@ def infer_capabilities(model_id: str) -> dict[str, Any]:
             supports_temperature = False
             intelligence = 18
 
+    # GPT-5.5 response model
+    elif "gpt-5.5" in base or "gpt5.5" in base:
+        context_window = 400_000
+        max_output = 128_000
+        intelligence = 20
+        supports_images = True
+        supports_extended_thinking = True
+        supports_function_calling = True
+        supports_temperature = False
+        allow_code_generation = True
+
+    # GPT-5.6 response models
+    elif "gpt-5.6" in base or "gpt5.6" in base:
+        context_window = 328_000 if "luna" in base else 400_000
+        max_output = 128_000
+        intelligence = 20
+        supports_images = True
+        supports_extended_thinking = True
+        supports_temperature = False
+        allow_code_generation = True
+
     # GPT-5.2 Codex - agentic coding model (no temperature support)
     elif "gpt-5.2-codex" in base or "gpt5.2codex" in base:
         context_window = 400_000
@@ -172,6 +247,61 @@ def infer_capabilities(model_id: str) -> dict[str, Any]:
         supports_extended_thinking = True
         supports_function_calling = True
         supports_temperature = False
+        allow_code_generation = True
+
+    elif "gpt-5-mini" in base or "gpt5-mini" in base:
+        context_window = 264_000
+        max_output = 64_000
+        intelligence = 16
+        supports_images = False
+        supports_extended_thinking = False
+        supports_function_calling = True
+        supports_json_mode = True
+        supports_temperature = False
+        allow_code_generation = True
+
+    elif "gemini-2.5-pro" in base or "gemini2-5-pro" in base:
+        context_window = 128_000
+        max_output = 65_536
+        supports_images = True
+        supports_extended_thinking = True
+        supports_function_calling = True
+        intelligence = 18
+        allow_code_generation = True
+
+    elif "gpt-4.1" in base:
+        context_window = 1_048_576
+        max_output = 16_384
+        supports_images = True
+        supports_extended_thinking = True
+        supports_function_calling = True
+        intelligence = 16
+        supports_temperature = False
+
+    elif "gpt-4o" in base:
+        context_window = 128_000
+        max_output = 16_384
+        supports_images = True
+        supports_extended_thinking = False
+        supports_function_calling = True
+        intelligence = 17
+        supports_temperature = False
+
+    elif "kimi-k2.7" in base:
+        context_window = 256_000
+        max_output = 32_000
+        supports_images = True
+        supports_extended_thinking = True
+        supports_temperature = False
+        intelligence = 17
+        allow_code_generation = True
+
+    elif "mai-code-1-flash" in base:
+        context_window = 256_000
+        max_output = 128_000
+        supports_extended_thinking = True
+        supports_temperature = False
+        intelligence = 16
         allow_code_generation = True
 
     # GPT-5.3 Codex - latest Codex-optimized agentic coding model (no temperature support)
@@ -202,10 +332,20 @@ def infer_capabilities(model_id: str) -> dict[str, Any]:
         supports_images = True
         intelligence = 13
 
-    # Claude Opus 4.6 - latest flagship
+    # Claude Fable 5 - latest Anthropic Mythos-class reasoning model
+    elif "claude-fable-5" in base or "fable-5" in base:
+        context_window = 264_000
+        max_output = 64_000
+        supports_images = True
+        supports_extended_thinking = True
+        supports_function_calling = True
+        intelligence = 20
+        allow_code_generation = True
+
+    # Claude Opus 4.5/4.7/4.8/5 - Anthropic flagship Claude models
     elif "opus" in base or "claude-opus" in base:
-        context_window = 1_000_000
-        max_output = 128_000
+        context_window = 264_000 if ("4.7" in base or "4-7" in base or "4.8" in base or "4-8" in base or "-5" in base) else 200_000
+        max_output = 64_000
         supports_images = True
         supports_extended_thinking = True
         supports_function_calling = True
@@ -214,8 +354,8 @@ def infer_capabilities(model_id: str) -> dict[str, Any]:
 
     # Claude Sonnet 4.6 - latest balanced Claude
     elif "sonnet" in base or "claude-sonnet" in base:
-        context_window = 1_000_000
-        max_output = 64_000
+        context_window = 264_000 if ("4.6" in base or "4-6" in base or "-5" in base) else 200_000
+        max_output = 64_000 if context_window == 264_000 else 32_000
         supports_images = True
         supports_extended_thinking = True
         supports_function_calling = True
@@ -233,7 +373,7 @@ def infer_capabilities(model_id: str) -> dict[str, Any]:
 
     # Gemini 3/3.1 - latest Google generation
     elif "gemini-3" in base or "gemini3" in base:
-        context_window = 1_048_576
+        context_window = 128_000 if "3-flash-preview" in base else 264_000
         max_output = 65_536
         supports_images = True
         supports_function_calling = True
@@ -243,7 +383,7 @@ def infer_capabilities(model_id: str) -> dict[str, Any]:
 
     # Gemini 2.5 series
     elif "gemini" in base:
-        context_window = 1_048_576
+        context_window = 128_000
         max_output = 65_536
         supports_images = True
         supports_function_calling = True
@@ -506,8 +646,16 @@ def save_registry(path: Path, data: dict[str, Any], dry_run: bool) -> None:
         return
 
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as handle:
-        handle.write(formatted)
+    tmp_path = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    try:
+        with tmp_path.open("w", encoding="utf-8") as handle:
+            handle.write(formatted)
+        os.replace(tmp_path, path)
+    finally:
+        try:
+            tmp_path.unlink()
+        except FileNotFoundError:
+            pass
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:

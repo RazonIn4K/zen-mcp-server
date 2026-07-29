@@ -1,6 +1,6 @@
 # MCP Client Configuration Cheatsheet
 
-Use the stdio-safe launcher (`scripts/start_stdio_stack.sh`) whenever an MCP client needs to spawn Zen and the GitHub Copilot proxy together. The launcher hides all setup noise, updates `conf/custom_models.json`, keeps the proxy in sync, and exits cleanly so the client receives only JSON-RPC messages.
+Use the stdio-safe launcher (`scripts/start_stdio_stack.sh`) whenever an MCP client needs to spawn Zen and the GitHub Copilot proxy together. The launcher hides all setup noise, starts the MCP server promptly, and performs Copilot readiness/model sync work in the background so the client receives only JSON-RPC messages during initialization.
 
 > **Why `bash -lc`?**  
 > `-l` starts a login shell so your `~/.bash_profile` / `~/.bashrc` PATH edits take effect, and `-c` executes the command string. This ensures tools installed with Homebrew, asdf, pyenv, etc. are available when the MCP client spawns Zen.
@@ -22,7 +22,7 @@ All snippets below assume you cloned Zen into `~/mcp-servers-official/zen-mcp-se
         "CUSTOM_API_URL": "http://localhost:4141/v1",
         "CUSTOM_API_KEY": "copilot-proxy",
         "COPILOT_REUSE_EXISTING": "1",
-        "CUSTOM_ALLOWED_MODELS": "copilot/claude-opus-4.6,copilot/claude-sonnet-4.6,copilot/claude-haiku-4.5,copilot/gemini-3.1-pro-preview,copilot/gemini-3-flash-preview,copilot/gpt-5.4,copilot/gpt-5.4-mini,copilot/gpt-5.3-codex,copilot/grok-code-fast-1,copilot/minimax-m2.5,copilot/goldeneye-free-auto,copilot/oswe-vscode-prime,copilot/oswe-vscode-secondary,copilot/search-agent-a,copilot/search-agent-b,copilot/search-agent-c",
+        "CUSTOM_ALLOWED_MODELS": "copilot/claude-haiku-4.5,copilot/claude-opus-4.5,copilot/claude-sonnet-4.5,copilot/claude-sonnet-4.6,copilot/claude-sonnet-5,copilot/gemini-2.5-pro,copilot/gemini-3-flash-preview,copilot/gemini-3.1-pro-preview,copilot/gemini-3.5-flash,copilot/gemini-3.6-flash,copilot/gpt-4.1,copilot/gpt-4.1-2025-04-14,copilot/gpt-4o,copilot/gpt-5-mini,copilot/gpt-5.3-codex,copilot/gpt-5.4,copilot/gpt-5.4-mini,copilot/gpt-5.6-luna,copilot/gpt-5.6-terra,copilot/kimi-k2.7-code,copilot/mai-code-1-flash-picker,copilot/oswe-vscode-prime",
         "DEFAULT_MODEL": "auto",
         "LOG_LEVEL": "INFO"
       }
@@ -46,7 +46,7 @@ All snippets below assume you cloned Zen into `~/mcp-servers-official/zen-mcp-se
         "CUSTOM_API_URL": "http://localhost:4141/v1",
         "CUSTOM_API_KEY": "copilot-proxy",
         "COPILOT_REUSE_EXISTING": "1",
-        "CUSTOM_ALLOWED_MODELS": "copilot/claude-opus-4.6,copilot/claude-sonnet-4.6,copilot/claude-haiku-4.5,copilot/gemini-3.1-pro-preview,copilot/gemini-3-flash-preview,copilot/gpt-5.4,copilot/gpt-5.4-mini,copilot/gpt-5.3-codex,copilot/grok-code-fast-1,copilot/minimax-m2.5,copilot/goldeneye-free-auto,copilot/oswe-vscode-prime,copilot/oswe-vscode-secondary,copilot/search-agent-a,copilot/search-agent-b,copilot/search-agent-c",
+        "CUSTOM_ALLOWED_MODELS": "copilot/claude-haiku-4.5,copilot/claude-opus-4.5,copilot/claude-sonnet-4.5,copilot/claude-sonnet-4.6,copilot/claude-sonnet-5,copilot/gemini-2.5-pro,copilot/gemini-3-flash-preview,copilot/gemini-3.1-pro-preview,copilot/gemini-3.5-flash,copilot/gemini-3.6-flash,copilot/gpt-4.1,copilot/gpt-4.1-2025-04-14,copilot/gpt-4o,copilot/gpt-5-mini,copilot/gpt-5.3-codex,copilot/gpt-5.4,copilot/gpt-5.4-mini,copilot/gpt-5.6-luna,copilot/gpt-5.6-terra,copilot/kimi-k2.7-code,copilot/mai-code-1-flash-picker,copilot/oswe-vscode-prime",
         "DEFAULT_MODEL": "auto",
         "LOG_LEVEL": "INFO"
       }
@@ -96,7 +96,7 @@ If a Copilot proxy is already listening on port `4141`, Zen will now reuse it au
         "CUSTOM_API_URL": "http://localhost:4141/v1",
         "CUSTOM_API_KEY": "copilot-proxy",
         "COPILOT_REUSE_EXISTING": "1",
-        "CUSTOM_ALLOWED_MODELS": "copilot/claude-opus-4.6,copilot/claude-sonnet-4.6,copilot/claude-haiku-4.5,copilot/gemini-3.1-pro-preview,copilot/gemini-3-flash-preview,copilot/gpt-5.4,copilot/gpt-5.4-mini,copilot/gpt-5.3-codex,copilot/grok-code-fast-1,copilot/minimax-m2.5,copilot/goldeneye-free-auto,copilot/oswe-vscode-prime,copilot/oswe-vscode-secondary,copilot/search-agent-a,copilot/search-agent-b,copilot/search-agent-c",
+        "CUSTOM_ALLOWED_MODELS": "copilot/claude-haiku-4.5,copilot/claude-opus-4.5,copilot/claude-sonnet-4.5,copilot/claude-sonnet-4.6,copilot/claude-sonnet-5,copilot/gemini-2.5-pro,copilot/gemini-3-flash-preview,copilot/gemini-3.1-pro-preview,copilot/gemini-3.5-flash,copilot/gemini-3.6-flash,copilot/gpt-4.1,copilot/gpt-4.1-2025-04-14,copilot/gpt-4o,copilot/gpt-5-mini,copilot/gpt-5.3-codex,copilot/gpt-5.4,copilot/gpt-5.4-mini,copilot/gpt-5.6-luna,copilot/gpt-5.6-terra,copilot/kimi-k2.7-code,copilot/mai-code-1-flash-picker,copilot/oswe-vscode-prime",
         "DEFAULT_MODEL": "auto",
         "LOG_LEVEL": "INFO"
       },
@@ -120,7 +120,7 @@ If a Copilot proxy is already listening on port `4141`, Zen will now reuse it au
         "cd ~/mcp-servers-official/zen-mcp-server && ./scripts/start_stdio_stack.sh"
       ],
       "env": {
-        "CUSTOM_ALLOWED_MODELS": "copilot/claude-opus-4.6,copilot/claude-sonnet-4.6,copilot/claude-haiku-4.5,copilot/gemini-3.1-pro-preview,copilot/gemini-3-flash-preview,copilot/gpt-5.4,copilot/gpt-5.4-mini,copilot/gpt-5.3-codex,copilot/grok-code-fast-1,copilot/minimax-m2.5,copilot/goldeneye-free-auto,copilot/oswe-vscode-prime,copilot/oswe-vscode-secondary,copilot/search-agent-a,copilot/search-agent-b,copilot/search-agent-c",
+        "CUSTOM_ALLOWED_MODELS": "copilot/claude-haiku-4.5,copilot/claude-opus-4.5,copilot/claude-sonnet-4.5,copilot/claude-sonnet-4.6,copilot/claude-sonnet-5,copilot/gemini-2.5-pro,copilot/gemini-3-flash-preview,copilot/gemini-3.1-pro-preview,copilot/gemini-3.5-flash,copilot/gemini-3.6-flash,copilot/gpt-4.1,copilot/gpt-4.1-2025-04-14,copilot/gpt-4o,copilot/gpt-5-mini,copilot/gpt-5.3-codex,copilot/gpt-5.4,copilot/gpt-5.4-mini,copilot/gpt-5.6-luna,copilot/gpt-5.6-terra,copilot/kimi-k2.7-code,copilot/mai-code-1-flash-picker,copilot/oswe-vscode-prime",
         "DEFAULT_MODEL": "auto",
         "CUSTOM_API_URL": "http://localhost:4141/v1",
         "CUSTOM_API_KEY": "copilot-proxy",
@@ -135,6 +135,7 @@ If a Copilot proxy is already listening on port `4141`, Zen will now reuse it au
 ## Model Selection Tips
 
 - The `CUSTOM_ALLOWED_MODELS` list guarantees only the newest GitHub Copilot models appear inside Zen. Adjust it after running `scripts/sync_copilot_models.py --dry-run` to inspect fresh aliases.
+- Set `COPILOT_BLOCK_UNTIL_READY=1` only for manual diagnostics where you explicitly want the older blocking startup behavior.
 - `DEFAULT_MODEL=auto` delegates to Zen's auto-selector, which already prioritises Claude 4.6, GPT-5.4 tiers, Gemini 3.1/3 previews, GPT-5.3-Codex, Grok Code Fast 1, and Raptor mini when available.
 - To double-check availability, run `use zen listmodels` (Claude Code) or `gemini mcp run zen listmodels`.
 

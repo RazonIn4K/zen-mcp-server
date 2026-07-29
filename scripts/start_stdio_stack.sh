@@ -14,6 +14,8 @@
 #   COPILOT_PORT           (default: 4141)
 #   COPILOT_RATE_LIMIT     (default: 2)
 #   COPILOT_REUSE_EXISTING (default: 0)  Set to 1 to reuse an existing proxy on COPILOT_PORT
+#   COPILOT_BLOCK_UNTIL_READY (default: 0)  Set to 1 to wait for proxy/model sync before server startup
+#   COPILOT_SYNC_ON_START   (default: 1)  Set to 0 to skip background model sync
 #   COPILOT_DIR_OVERRIDE   (path to a copilot-api checkout)
 #   CUSTOM_API_URL / KEY   forwarded to the server via .env or MCP config
 #   ZEN_STDIO_SILENT       set to 0 to surface setup logs on stderr
@@ -32,6 +34,8 @@ RUNSERVER_LOG="${LOG_DIR}/run-server.log"
 COPILOT_PORT="${COPILOT_PORT:-4141}"
 COPILOT_RATE_LIMIT="${COPILOT_RATE_LIMIT:-2}"
 COPILOT_REUSE_EXISTING="${COPILOT_REUSE_EXISTING:-0}"
+COPILOT_BLOCK_UNTIL_READY="${COPILOT_BLOCK_UNTIL_READY:-0}"
+COPILOT_SYNC_ON_START="${COPILOT_SYNC_ON_START:-1}"
 LOCAL_COPILOT_DIR_DEFAULT="$(cd "${ROOT_DIR}/.." && pwd)/copilot-api"
 COPILOT_DIR="${COPILOT_DIR_OVERRIDE:-$LOCAL_COPILOT_DIR_DEFAULT}"
 COPILOT_ARGS=(--port "${COPILOT_PORT}" --verbose)
@@ -39,6 +43,8 @@ if [[ -n "${COPILOT_RATE_LIMIT}" ]]; then
   COPILOT_ARGS+=(--rate-limit "${COPILOT_RATE_LIMIT}" --wait)
 fi
 COPILOT_PID=""
+PROXY_WATCH_PID=""
+SERVER_PID=""
 COPILOT_MANAGED=1
 
 timestamp() {
@@ -55,6 +61,15 @@ log() {
 
 cleanup() {
   local exit_code=$?
+  trap - EXIT INT TERM
+  if [[ -n "${SERVER_PID}" ]] && kill -0 "${SERVER_PID}" 2>/dev/null; then
+    kill "${SERVER_PID}" 2>/dev/null || true
+    wait "${SERVER_PID}" 2>/dev/null || true
+  fi
+  if [[ -n "${PROXY_WATCH_PID}" ]] && kill -0 "${PROXY_WATCH_PID}" 2>/dev/null; then
+    kill "${PROXY_WATCH_PID}" 2>/dev/null || true
+    wait "${PROXY_WATCH_PID}" 2>/dev/null || true
+  fi
   if (( COPILOT_MANAGED == 1 )) && [[ -n "${COPILOT_PID}" ]] && kill -0 "${COPILOT_PID}" 2>/dev/null; then
     log "Stopping Copilot proxy (pid ${COPILOT_PID})"
     kill "${COPILOT_PID}" 2>/dev/null || true
@@ -69,7 +84,7 @@ wait_for_proxy() {
   local max_tries=60
   local url="http://localhost:${COPILOT_PORT}/v1/models"
 
-  while ! curl -sSf "${url}" >/dev/null 2>&1; do
+  while ! curl -sSf --max-time 2 "${url}" >/dev/null 2>&1; do
     tries=$((tries + 1))
     if (( tries >= max_tries )); then
       return 1
@@ -80,7 +95,7 @@ wait_for_proxy() {
 
 existing_proxy_ready() {
   local url="http://localhost:${COPILOT_PORT}/v1/models"
-  curl -sSf "${url}" >/dev/null 2>&1
+  curl -sSf --max-time 2 "${url}" >/dev/null 2>&1
 }
 
 is_port_listening() {
@@ -113,6 +128,61 @@ start_copilot_proxy() {
   COPILOT_PID=$!
 }
 
+sync_copilot_models() {
+  if [[ "${COPILOT_SYNC_ON_START}" != "1" ]]; then
+    log "Skipping Copilot model sync (COPILOT_SYNC_ON_START=${COPILOT_SYNC_ON_START})"
+    return 0
+  fi
+
+  log "Synchronising Copilot models into conf/custom_models.json..."
+  if ! python3 "${ROOT_DIR}/scripts/sync_copilot_models.py" >>"${SYNC_LOG}" 2>&1; then
+    log "Copilot model sync failed; see ${SYNC_LOG}"
+    return 1
+  fi
+}
+
+watch_proxy_and_sync() {
+  if wait_for_proxy; then
+    log "Copilot API online at http://localhost:${COPILOT_PORT}"
+    sync_copilot_models || true
+  else
+    log "Copilot API failed to become ready on port ${COPILOT_PORT}"
+  fi
+}
+
+source_env_defaults() {
+  local env_file="${ROOT_DIR}/.env"
+  local line key value
+
+  [[ -f "${env_file}" ]] || return 0
+
+  while IFS= read -r line || [[ -n "${line}" ]]; do
+    line="${line#"${line%%[![:space:]]*}"}"
+    line="${line%"${line##*[![:space:]]}"}"
+    [[ -z "${line}" || "${line}" == \#* ]] && continue
+
+    if [[ "${line}" == export\ * ]]; then
+      line="${line#export }"
+    fi
+
+    [[ "${line}" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]] || continue
+    key="${line%%=*}"
+    value="${line#*=}"
+
+    if [[ -n "${!key+x}" ]]; then
+      continue
+    fi
+
+    if [[ "${value}" == \"*\" && "${value}" == *\" ]]; then
+      value="${value:1:${#value}-2}"
+    elif [[ "${value}" == \'*\' && "${value}" == *\' ]]; then
+      value="${value:1:${#value}-2}"
+    fi
+
+    export "${key}=${value}"
+  done <"${env_file}"
+}
+
 # ---------------------------------------------------------------------------
 # Bootstrap sequence
 # ---------------------------------------------------------------------------
@@ -122,6 +192,24 @@ log "Logs: ${STACK_LOG}"
 log "Proxy log: ${PROXY_LOG}"
 log "Sync log: ${SYNC_LOG}"
 log "Run-server log: ${RUNSERVER_LOG}"
+
+export ZEN_SKIP_INTEGRATIONS=1
+export ZEN_STDIO_SILENT="${ZEN_STDIO_SILENT:-1}"
+
+PYTHON_BIN="${ROOT_DIR}/.zen_venv/bin/python"
+if [[ "${ZEN_FORCE_BOOTSTRAP:-0}" == "1" || ! -x "${PYTHON_BIN}" || ! -f "${ROOT_DIR}/.env" ]]; then
+  log "Preparing Zen environment via run-server.sh"
+  ( cd "${ROOT_DIR}" && ./run-server.sh "$@" ) >>"${RUNSERVER_LOG}" 2>&1
+else
+  log "Using existing Zen environment (set ZEN_FORCE_BOOTSTRAP=1 to rebuild)"
+fi
+
+source_env_defaults
+
+if [[ ! -x "${PYTHON_BIN}" ]]; then
+  log "Python virtualenv not found at ${PYTHON_BIN}"
+  exit 1
+fi
 
 if is_port_listening; then
   if existing_proxy_ready; then
@@ -139,37 +227,21 @@ fi
 if (( COPILOT_MANAGED == 1 )); then
   start_copilot_proxy
 fi
-if ! wait_for_proxy; then
-  log "Copilot API failed to become ready on port ${COPILOT_PORT}"
-  exit 1
-fi
-log "Copilot API online at http://localhost:${COPILOT_PORT}"
 
-log "Synchronising Copilot models into conf/custom_models.json..."
-python3 "${ROOT_DIR}/scripts/sync_copilot_models.py" >>"${SYNC_LOG}" 2>&1
-
-export ZEN_SKIP_INTEGRATIONS=1
-export ZEN_STDIO_SILENT="${ZEN_STDIO_SILENT:-1}"
-
-PYTHON_BIN="${ROOT_DIR}/.zen_venv/bin/python"
-if [[ "${ZEN_FORCE_BOOTSTRAP:-0}" == "1" || ! -x "${PYTHON_BIN}" || ! -f "${ROOT_DIR}/.env" ]]; then
-  log "Preparing Zen environment via run-server.sh"
-  ( cd "${ROOT_DIR}" && ./run-server.sh "$@" ) >>"${RUNSERVER_LOG}" 2>&1
+if [[ "${COPILOT_BLOCK_UNTIL_READY}" == "1" ]]; then
+  if ! wait_for_proxy; then
+    log "Copilot API failed to become ready on port ${COPILOT_PORT}"
+    exit 1
+  fi
+  log "Copilot API online at http://localhost:${COPILOT_PORT}"
+  sync_copilot_models || true
 else
-  log "Using existing Zen environment (set ZEN_FORCE_BOOTSTRAP=1 to rebuild)"
-fi
-
-if [[ -f "${ROOT_DIR}/.env" ]]; then
-  set -a
-  # shellcheck disable=SC1090
-  source "${ROOT_DIR}/.env"
-  set +a
-fi
-
-if [[ ! -x "${PYTHON_BIN}" ]]; then
-  log "Python virtualenv not found at ${PYTHON_BIN}"
-  exit 1
+  watch_proxy_and_sync &
+  PROXY_WATCH_PID=$!
+  log "Copilot readiness/model sync running in background (pid ${PROXY_WATCH_PID})"
 fi
 
 log "Handing off to server.py (stdio mode)"
-"${PYTHON_BIN}" "${ROOT_DIR}/server.py" "$@"
+"${PYTHON_BIN}" "${ROOT_DIR}/server.py" "$@" <&0 &
+SERVER_PID=$!
+wait "${SERVER_PID}"

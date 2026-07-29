@@ -22,6 +22,221 @@
   },
   "models": [
     {
+      "model_name": "claude-fable-5",
+      "friendly_name": "Claude Fable 5 (Copilot)",
+      "aliases": [
+        "copilot/claude-fable-5",
+        "copilot/fable"
+      ],
+      "description": "Claude Fable 5 via GitHub Copilot proxy (vendor: Anthropic).",
+      "context_window": 264000,
+      "max_output_tokens": 64000,
+      "supports_extended_thinking": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": true,
+      "supports_temperature": true,
+      "max_image_size_mb": 40.0,
+      "intelligence_score": 20,
+      "allow_code_generation": true
+    },
+    {
+      "model_name": "claude-opus-4.5",
+      "friendly_name": "Claude Opus 4.5 (Copilot)",
+      "aliases": [
+        "copilot/claude-opus-4.5",
+        "copilot/claude-opus-4-5",
+        "copilot/opus-4.5"
+      ],
+      "description": "Claude Opus 4.5 via GitHub Copilot proxy (vendor: Anthropic).",
+      "context_window": 200000,
+      "max_output_tokens": 64000,
+      "supports_extended_thinking": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": true,
+      "supports_temperature": true,
+      "max_image_size_mb": 40.0,
+      "intelligence_score": 20,
+      "allow_code_generation": true
+    },
+    {
+      "model_name": "claude-opus-4.7",
+      "friendly_name": "Claude Opus 4.7 (Copilot)",
+      "aliases": [
+        "copilot/claude-opus-4.7",
+        "copilot/claude-opus-4-7"
+      ],
+      "description": "Claude Opus 4.7 via GitHub Copilot proxy (vendor: Anthropic).",
+      "context_window": 264000,
+      "max_output_tokens": 64000,
+      "supports_extended_thinking": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": true,
+      "supports_temperature": true,
+      "max_image_size_mb": 40.0,
+      "intelligence_score": 20,
+      "allow_code_generation": true
+    },
+    {
+      "model_name": "claude-opus-4.8",
+      "friendly_name": "Claude Opus 4.8 (Copilot)",
+      "aliases": [
+        "copilot/claude-opus-4.8",
+        "copilot/claude-opus-4-8",
+        "copilot/opus",
+        "copilot/claude"
+      ],
+      "description": "Claude Opus 4.8 via GitHub Copilot proxy (vendor: Anthropic).",
+      "context_window": 264000,
+      "max_output_tokens": 64000,
+      "supports_extended_thinking": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": true,
+      "supports_temperature": true,
+      "max_image_size_mb": 40.0,
+      "intelligence_score": 20,
+      "allow_code_generation": true
+    },
+    {
+      "model_name": "claude-opus-4.8-fast",
+      "friendly_name": "Claude Opus 4.8 (fast mode) (Copilot)",
+      "aliases": [
+        "copilot/claude-opus-4.8-fast",
+        "copilot/claude-opus-4-8-fast",
+        "copilot/claude-opus-4-8-fast-mode"
+      ],
+      "description": "Claude Opus 4.8 (fast mode) via GitHub Copilot proxy (vendor: Anthropic).",
+      "context_window": 264000,
+      "max_output_tokens": 64000,
+      "supports_extended_thinking": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": true,
+      "supports_temperature": true,
+      "max_image_size_mb": 40.0,
+      "intelligence_score": 20,
+      "allow_code_generation": true
+    },
+    {
+      "model_name": "claude-opus-5",
+      "friendly_name": "Claude Opus 5 (Copilot)",
+      "aliases": [
+        "copilot/claude-opus-5"
+      ],
+      "description": "Claude Opus 5 via GitHub Copilot proxy (vendor: Anthropic).",
+      "context_window": 264000,
+      "max_output_tokens": 64000,
+      "supports_extended_thinking": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": true,
+      "supports_temperature": true,
+      "max_image_size_mb": 40.0,
+      "intelligence_score": 20,
+      "allow_code_generation": true
+    },
+    {
+      "model_name": "gpt-5.4",
+      "friendly_name": "GPT-5.4 (Copilot)",
+      "aliases": [
+        "copilot/gpt-5.4",
+        "copilot/gpt-5-4"
+      ],
+      "description": "GPT-5.4 via GitHub Copilot proxy (vendor: OpenAI).",
+      "context_window": 400000,
+      "max_output_tokens": 128000,
+      "supports_extended_thinking": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": true,
+      "supports_temperature": true,
+      "max_image_size_mb": 40.0,
+      "intelligence_score": 20,
+      "allow_code_generation": true
+    },
+    {
+      "model_name": "gpt-5.5",
+      "friendly_name": "GPT-5.5 (Copilot)",
+      "aliases": [
+        "copilot/gpt-5.5",
+        "copilot/gpt-5-5"
+      ],
+      "description": "GPT-5.5 via GitHub Copilot proxy (vendor: OpenAI).",
+      "context_window": 400000,
+      "max_output_tokens": 128000,
+      "supports_extended_thinking": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": true,
+      "supports_temperature": false,
+      "max_image_size_mb": 40.0,
+      "intelligence_score": 20,
+      "allow_code_generation": true
+    },
+    {
+      "model_name": "gpt-5.6-luna",
+      "friendly_name": "GPT-5.6 Luna (Copilot)",
+      "aliases": [
+        "copilot/gpt-5.6-luna",
+        "copilot/gpt-5-6-luna",
+        "copilot/luna"
+      ],
+      "description": "GPT-5.6 Luna via GitHub Copilot proxy (vendor: OpenAI).",
+      "context_window": 328000,
+      "max_output_tokens": 128000,
+      "supports_extended_thinking": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": true,
+      "supports_temperature": false,
+      "max_image_size_mb": 40.0,
+      "intelligence_score": 20,
+      "allow_code_generation": true
+    },
+    {
+      "model_name": "gpt-5.6-sol",
+      "friendly_name": "GPT-5.6 Sol (Copilot)",
+      "aliases": [
+        "copilot/gpt-5.6-sol",
+        "copilot/gpt-5-6-sol",
+        "copilot/sol"
+      ],
+      "description": "GPT-5.6 Sol via GitHub Copilot proxy (vendor: OpenAI).",
+      "context_window": 400000,
+      "max_output_tokens": 128000,
+      "supports_extended_thinking": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": true,
+      "supports_temperature": false,
+      "max_image_size_mb": 40.0,
+      "intelligence_score": 20,
+      "allow_code_generation": true
+    },
+    {
+      "model_name": "gpt-5.6-terra",
+      "friendly_name": "GPT-5.6 Terra (Copilot)",
+      "aliases": [
+        "copilot/gpt-5.6-terra",
+        "copilot/gpt-5-6-terra",
+        "copilot/terra"
+      ],
+      "description": "GPT-5.6 Terra via GitHub Copilot proxy (vendor: OpenAI).",
+      "context_window": 400000,
+      "max_output_tokens": 128000,
+      "supports_extended_thinking": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": true,
+      "supports_temperature": false,
+      "max_image_size_mb": 40.0,
+      "intelligence_score": 20,
+      "allow_code_generation": true
+    },
+    {
       "model_name": "gemini-3.1-pro-preview",
       "friendly_name": "Gemini 3.1 Pro (Copilot)",
       "aliases": [
@@ -31,7 +246,7 @@
         "copilot/gemini"
       ],
       "description": "Gemini 3.1 Pro via GitHub Copilot proxy (vendor: Google).",
-      "context_window": 1048576,
+      "context_window": 264000,
       "max_output_tokens": 65536,
       "supports_extended_thinking": true,
       "supports_function_calling": true,
@@ -43,12 +258,70 @@
       "allow_code_generation": true
     },
     {
+      "model_name": "claude-sonnet-4.5",
+      "friendly_name": "Claude Sonnet 4.5 (Copilot)",
+      "aliases": [
+        "copilot/claude-sonnet-4.5",
+        "copilot/claude-sonnet-4-5"
+      ],
+      "description": "Claude Sonnet 4.5 via GitHub Copilot proxy (vendor: Anthropic).",
+      "context_window": 200000,
+      "max_output_tokens": 32000,
+      "supports_extended_thinking": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": true,
+      "supports_temperature": true,
+      "max_image_size_mb": 40.0,
+      "intelligence_score": 19,
+      "allow_code_generation": true
+    },
+    {
+      "model_name": "claude-sonnet-4.6",
+      "friendly_name": "Claude Sonnet 4.6 (Copilot)",
+      "aliases": [
+        "copilot/claude-sonnet-4.6",
+        "copilot/claude-sonnet-4-6",
+        "copilot/sonnet-4.6",
+        "copilot/sonnet"
+      ],
+      "description": "Claude Sonnet 4.6 via GitHub Copilot proxy (vendor: Anthropic).",
+      "context_window": 264000,
+      "max_output_tokens": 64000,
+      "supports_extended_thinking": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": true,
+      "supports_temperature": true,
+      "max_image_size_mb": 40.0,
+      "intelligence_score": 19,
+      "allow_code_generation": true
+    },
+    {
+      "model_name": "claude-sonnet-5",
+      "friendly_name": "Claude Sonnet 5 (Copilot)",
+      "aliases": [
+        "copilot/claude-sonnet-5"
+      ],
+      "description": "Claude Sonnet 5 via GitHub Copilot proxy (vendor: Anthropic).",
+      "context_window": 264000,
+      "max_output_tokens": 64000,
+      "supports_extended_thinking": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": true,
+      "supports_temperature": true,
+      "max_image_size_mb": 40.0,
+      "intelligence_score": 19,
+      "allow_code_generation": true
+    },
+    {
       "model_name": "gpt-5.3-codex",
       "friendly_name": "GPT-5.3-Codex (Copilot)",
       "aliases": [
         "copilot/gpt-5.3-codex",
         "copilot/gpt-5-3-codex",
-        "copilot/codex"
+        "copilot/gpt-5-codex"
       ],
       "description": "GPT-5.3-Codex via GitHub Copilot proxy (vendor: OpenAI).",
       "context_window": 400000,
@@ -71,8 +344,8 @@
         "copilot/gpt-mini"
       ],
       "description": "GPT-5.4 mini via GitHub Copilot proxy (vendor: OpenAI).",
-      "context_window": 500000,
-      "max_output_tokens": 150000,
+      "context_window": 400000,
+      "max_output_tokens": 128000,
       "supports_extended_thinking": true,
       "supports_function_calling": true,
       "supports_json_mode": true,
@@ -83,15 +356,52 @@
       "allow_code_generation": true
     },
     {
-      "model_name": "gpt-5.2-codex",
-      "friendly_name": "GPT-5.2-Codex (Copilot)",
+      "model_name": "gemini-2.5-pro",
+      "friendly_name": "Gemini 2.5 Pro (Copilot)",
       "aliases": [
-        "copilot/gpt-5.2-codex",
-        "copilot/gpt-5-2-codex"
+        "copilot/gemini-2.5-pro",
+        "copilot/gemini-2-5-pro"
       ],
-      "description": "GPT-5.2-Codex via GitHub Copilot proxy (vendor: OpenAI).",
-      "context_window": 400000,
-      "max_output_tokens": 128000,
+      "description": "Gemini 2.5 Pro via GitHub Copilot proxy (vendor: Google).",
+      "context_window": 128000,
+      "max_output_tokens": 65536,
+      "supports_extended_thinking": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": true,
+      "supports_temperature": true,
+      "max_image_size_mb": 40.0,
+      "intelligence_score": 18,
+      "allow_code_generation": true
+    },
+    {
+      "model_name": "gpt-4o",
+      "friendly_name": "GPT-4o (Copilot)",
+      "aliases": [
+        "copilot/gpt-4o"
+      ],
+      "description": "GPT-4o via GitHub Copilot proxy (vendor: Azure OpenAI).",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "supports_extended_thinking": false,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": true,
+      "supports_temperature": false,
+      "max_image_size_mb": 40.0,
+      "intelligence_score": 17
+    },
+    {
+      "model_name": "kimi-k2.7-code",
+      "friendly_name": "Kimi K2.7 Code (Copilot)",
+      "aliases": [
+        "copilot/kimi-k2.7-code",
+        "copilot/kimi-k2-7-code",
+        "copilot/kimi"
+      ],
+      "description": "Kimi K2.7 Code via GitHub Copilot proxy (vendor: Moonshot AI).",
+      "context_window": 256000,
+      "max_output_tokens": 32000,
       "supports_extended_thinking": true,
       "supports_function_calling": true,
       "supports_json_mode": true,
@@ -102,22 +412,131 @@
       "allow_code_generation": true
     },
     {
-      "model_name": "grok-code-fast-1",
-      "friendly_name": "Grok Code Fast 1 (Copilot)",
+      "model_name": "gpt-4.1-2025-04-14",
+      "friendly_name": "GPT-4.1 (Copilot)",
       "aliases": [
-        "copilot/grok-code-fast-1",
-        "copilot/grok-code"
+        "copilot/gpt-4.1-2025-04-14",
+        "copilot/gpt-4-1-2025-04-14",
+        "copilot/gpt-4-1"
       ],
-      "description": "Grok Code Fast 1 via GitHub Copilot proxy (vendor: xAI).",
-      "context_window": 2000000,
-      "max_output_tokens": 256000,
-      "supports_extended_thinking": false,
+      "description": "GPT-4.1 via GitHub Copilot proxy (vendor: Azure OpenAI).",
+      "context_window": 1048576,
+      "max_output_tokens": 16384,
+      "supports_extended_thinking": true,
       "supports_function_calling": true,
       "supports_json_mode": true,
       "supports_images": true,
-      "supports_temperature": true,
+      "supports_temperature": false,
       "max_image_size_mb": 40.0,
-      "intelligence_score": 15,
+      "intelligence_score": 16
+    },
+    {
+      "model_name": "gpt-4.1",
+      "friendly_name": "GPT-4.1 (Copilot)",
+      "aliases": [
+        "copilot/gpt-4.1"
+      ],
+      "description": "GPT-4.1 via GitHub Copilot proxy (vendor: Azure OpenAI).",
+      "context_window": 1048576,
+      "max_output_tokens": 16384,
+      "supports_extended_thinking": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": true,
+      "supports_temperature": false,
+      "max_image_size_mb": 40.0,
+      "intelligence_score": 16
+    },
+    {
+      "model_name": "gpt-5-mini",
+      "friendly_name": "GPT-5 mini (Copilot)",
+      "aliases": [
+        "copilot/gpt-5-mini"
+      ],
+      "description": "GPT-5 mini via GitHub Copilot proxy (vendor: Azure OpenAI).",
+      "context_window": 264000,
+      "max_output_tokens": 64000,
+      "supports_extended_thinking": false,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": false,
+      "supports_temperature": false,
+      "max_image_size_mb": 0.0,
+      "intelligence_score": 16,
+      "allow_code_generation": true
+    },
+    {
+      "model_name": "mai-code-1-flash-picker",
+      "friendly_name": "MAI-Code-1-Flash (Copilot)",
+      "aliases": [
+        "copilot/mai-code-1-flash-picker",
+        "copilot/mai-code-1-flash",
+        "copilot/mai-code"
+      ],
+      "description": "MAI-Code-1-Flash via GitHub Copilot proxy (vendor: Microsoft).",
+      "context_window": 256000,
+      "max_output_tokens": 128000,
+      "supports_extended_thinking": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": false,
+      "supports_temperature": false,
+      "max_image_size_mb": 0.0,
+      "intelligence_score": 16,
+      "allow_code_generation": true
+    },
+    {
+      "model_name": "mai-code-1-flash-secondary",
+      "friendly_name": "MAI-Code-1-Flash (Copilot)",
+      "aliases": [
+        "copilot/mai-code-1-flash-secondary"
+      ],
+      "description": "MAI-Code-1-Flash via GitHub Copilot proxy (vendor: Microsoft).",
+      "context_window": 256000,
+      "max_output_tokens": 128000,
+      "supports_extended_thinking": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": false,
+      "supports_temperature": false,
+      "max_image_size_mb": 0.0,
+      "intelligence_score": 16,
+      "allow_code_generation": true
+    },
+    {
+      "model_name": "mai-code-1-flash-tertiary",
+      "friendly_name": "MAI-Code-1-Flash (Copilot)",
+      "aliases": [
+        "copilot/mai-code-1-flash-tertiary"
+      ],
+      "description": "MAI-Code-1-Flash via GitHub Copilot proxy (vendor: Microsoft).",
+      "context_window": 256000,
+      "max_output_tokens": 128000,
+      "supports_extended_thinking": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": false,
+      "supports_temperature": false,
+      "max_image_size_mb": 0.0,
+      "intelligence_score": 16,
+      "allow_code_generation": true
+    },
+    {
+      "model_name": "mai-code-1-flash",
+      "friendly_name": "MAI-Code-1-Flash (Copilot)",
+      "aliases": [
+        "copilot/mai-code-1-flash-2"
+      ],
+      "description": "MAI-Code-1-Flash via GitHub Copilot proxy (vendor: Microsoft).",
+      "context_window": 256000,
+      "max_output_tokens": 128000,
+      "supports_extended_thinking": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": false,
+      "supports_temperature": false,
+      "max_image_size_mb": 0.0,
+      "intelligence_score": 16,
       "allow_code_generation": true
     },
     {
@@ -147,7 +566,45 @@
         "copilot/gemini-flash"
       ],
       "description": "Gemini 3 Flash (Preview) via GitHub Copilot proxy (vendor: Google).",
-      "context_window": 1048576,
+      "context_window": 128000,
+      "max_output_tokens": 65536,
+      "supports_extended_thinking": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": true,
+      "supports_temperature": true,
+      "max_image_size_mb": 40.0,
+      "intelligence_score": 13,
+      "allow_code_generation": true
+    },
+    {
+      "model_name": "gemini-3.5-flash",
+      "friendly_name": "Gemini 3.5 Flash (Copilot)",
+      "aliases": [
+        "copilot/gemini-3.5-flash",
+        "copilot/gemini-3-5-flash"
+      ],
+      "description": "Gemini 3.5 Flash via GitHub Copilot proxy (vendor: Google).",
+      "context_window": 264000,
+      "max_output_tokens": 65536,
+      "supports_extended_thinking": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": true,
+      "supports_temperature": true,
+      "max_image_size_mb": 40.0,
+      "intelligence_score": 13,
+      "allow_code_generation": true
+    },
+    {
+      "model_name": "gemini-3.6-flash",
+      "friendly_name": "Gemini 3.6 Flash (Copilot)",
+      "aliases": [
+        "copilot/gemini-3.6-flash",
+        "copilot/gemini-3-6-flash"
+      ],
+      "description": "Gemini 3.6 Flash via GitHub Copilot proxy (vendor: Google).",
+      "context_window": 264000,
       "max_output_tokens": 65536,
       "supports_extended_thinking": true,
       "supports_function_calling": true,
@@ -160,14 +617,13 @@
     },
     {
       "model_name": "oswe-vscode-prime",
-      "friendly_name": "Raptor mini (Preview) (Copilot)",
+      "friendly_name": "Raptor mini (Copilot)",
       "aliases": [
         "copilot/oswe-vscode-prime",
-        "copilot/raptor-mini-preview",
-        "copilot/raptor-prime",
-        "copilot/raptor-mini"
+        "copilot/raptor-mini",
+        "copilot/raptor-prime"
       ],
-      "description": "Raptor mini (Preview) via GitHub Copilot proxy (vendor: Azure OpenAI).",
+      "description": "Raptor mini via GitHub Copilot proxy (vendor: Azure OpenAI).",
       "context_window": 128000,
       "max_output_tokens": 65536,
       "supports_extended_thinking": false,
@@ -180,80 +636,142 @@
       "allow_code_generation": true
     },
     {
-      "model_name": "oswe-vscode-secondary",
-      "friendly_name": "Raptor mini (Preview) (Copilot)",
+      "model_name": "auto-model-3",
+      "friendly_name": "Auto model (Copilot)",
       "aliases": [
-        "copilot/oswe-vscode-secondary",
-        "copilot/raptor-secondary"
+        "copilot/auto-model-3",
+        "copilot/auto-model"
       ],
-      "description": "Raptor mini (Preview) via GitHub Copilot proxy (vendor: Azure OpenAI).",
+      "description": "Auto model via GitHub Copilot proxy (vendor: Experimental).",
       "context_window": 128000,
-      "max_output_tokens": 65536,
+      "max_output_tokens": 4096,
       "supports_extended_thinking": false,
       "supports_function_calling": true,
       "supports_json_mode": true,
       "supports_images": false,
       "supports_temperature": true,
       "max_image_size_mb": 0.0,
-      "intelligence_score": 13,
-      "allow_code_generation": true
+      "intelligence_score": 12
     },
     {
-      "model_name": "accounts/msft/routers/f185i3v4",
-      "friendly_name": "Search Agent A (Copilot)",
+      "model_name": "copilot-search-a",
+      "friendly_name": "Copilot Agent A (Copilot)",
       "aliases": [
-        "copilot/accounts/msft/routers/f185i3v4",
-        "copilot/accounts-msft-routers-f185i3v4",
-        "copilot/search-agent-a"
+        "copilot/copilot-search-a",
+        "copilot/copilot-agent-a"
       ],
-      "description": "Search Agent A via GitHub Copilot proxy (vendor: github-copilot).",
-      "context_window": 262144,
-      "max_output_tokens": 65536,
+      "description": "Copilot Agent A via GitHub Copilot proxy (vendor: Fireworks).",
+      "context_window": 128000,
+      "max_output_tokens": 4096,
       "supports_extended_thinking": false,
       "supports_function_calling": true,
       "supports_json_mode": true,
       "supports_images": false,
       "supports_temperature": true,
       "max_image_size_mb": 0.0,
-      "intelligence_score": 10
+      "intelligence_score": 12
     },
     {
-      "model_name": "accounts/msft/routers/fmfeto88",
-      "friendly_name": "Search Agent B (Copilot)",
+      "model_name": "copilot-search-b",
+      "friendly_name": "Copilot Search B (Copilot)",
       "aliases": [
-        "copilot/accounts/msft/routers/fmfeto88",
-        "copilot/accounts-msft-routers-fmfeto88",
-        "copilot/search-agent-b"
+        "copilot/copilot-search-b"
       ],
-      "description": "Search Agent B via GitHub Copilot proxy (vendor: Fireworks).",
-      "context_window": 262144,
-      "max_output_tokens": 65536,
+      "description": "Copilot Search B via GitHub Copilot proxy (vendor: Fireworks).",
+      "context_window": 128000,
+      "max_output_tokens": 4096,
       "supports_extended_thinking": false,
       "supports_function_calling": true,
       "supports_json_mode": true,
       "supports_images": false,
       "supports_temperature": true,
       "max_image_size_mb": 0.0,
-      "intelligence_score": 10
+      "intelligence_score": 12
     },
     {
-      "model_name": "accounts/msft/routers/gdjv4v2v",
-      "friendly_name": "Search Agent C (Copilot)",
+      "model_name": "copilot-search-c",
+      "friendly_name": "Copilot Search C (Copilot)",
       "aliases": [
-        "copilot/accounts/msft/routers/gdjv4v2v",
-        "copilot/accounts-msft-routers-gdjv4v2v",
-        "copilot/search-agent-c"
+        "copilot/copilot-search-c"
       ],
-      "description": "Search Agent C via GitHub Copilot proxy (vendor: Fireworks).",
-      "context_window": 262144,
-      "max_output_tokens": 65536,
+      "description": "Copilot Search C via GitHub Copilot proxy (vendor: Fireworks).",
+      "context_window": 128000,
+      "max_output_tokens": 4096,
       "supports_extended_thinking": false,
       "supports_function_calling": true,
       "supports_json_mode": true,
       "supports_images": false,
       "supports_temperature": true,
       "max_image_size_mb": 0.0,
-      "intelligence_score": 10
+      "intelligence_score": 12
+    },
+    {
+      "model_name": "exec-agent-a",
+      "friendly_name": "Exec Agent A (Copilot)",
+      "aliases": [
+        "copilot/exec-agent-a"
+      ],
+      "description": "Exec Agent A via GitHub Copilot proxy (vendor: Fireworks).",
+      "context_window": 128000,
+      "max_output_tokens": 4096,
+      "supports_extended_thinking": false,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": false,
+      "supports_temperature": true,
+      "max_image_size_mb": 0.0,
+      "intelligence_score": 12
+    },
+    {
+      "model_name": "exec-agent-b",
+      "friendly_name": "Exec Agent B (Copilot)",
+      "aliases": [
+        "copilot/exec-agent-b"
+      ],
+      "description": "Exec Agent B via GitHub Copilot proxy (vendor: Fireworks).",
+      "context_window": 128000,
+      "max_output_tokens": 4096,
+      "supports_extended_thinking": false,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": false,
+      "supports_temperature": true,
+      "max_image_size_mb": 0.0,
+      "intelligence_score": 12
+    },
+    {
+      "model_name": "exec-agent-c",
+      "friendly_name": "Exec Agent C (Copilot)",
+      "aliases": [
+        "copilot/exec-agent-c"
+      ],
+      "description": "Exec Agent C via GitHub Copilot proxy (vendor: Fireworks).",
+      "context_window": 128000,
+      "max_output_tokens": 4096,
+      "supports_extended_thinking": false,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": false,
+      "supports_temperature": true,
+      "max_image_size_mb": 0.0,
+      "intelligence_score": 12
+    },
+    {
+      "model_name": "trajectory-compaction",
+      "friendly_name": "Trajectory Compaction (Copilot)",
+      "aliases": [
+        "copilot/trajectory-compaction"
+      ],
+      "description": "Trajectory Compaction via GitHub Copilot proxy (vendor: Fireworks).",
+      "context_window": 128000,
+      "max_output_tokens": 4096,
+      "supports_extended_thinking": false,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": false,
+      "supports_temperature": true,
+      "max_image_size_mb": 0.0,
+      "intelligence_score": 12
     }
   ]
 }
